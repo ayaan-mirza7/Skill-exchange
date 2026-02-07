@@ -24,6 +24,46 @@ export default function Dashboard() {
   useEffect(()=>{
     load();
   },[]);
+  const downloadNote = async (id) => {
+  try {
+    const res = await api.post(
+      `/notes/download/${id}`,
+      {},
+      {
+        responseType: "blob"
+      }
+    );
+
+    // 🔥 get filename from headers
+    const disposition =
+      res.headers["content-disposition"] || "";
+
+    let filename = "downloaded-file";
+
+    const match = disposition.match(/filename="(.+)"/);
+
+    if (match?.[1]) {
+      filename = match[1];     // real name like abc.txt
+    }
+
+    const blob = new Blob([res.data]);
+
+    const url = window.URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;      // 🔥 real extension
+    document.body.appendChild(a);
+    a.click();
+
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+
+  } catch (err) {
+    alert("Not enough credits or download error");
+  }
+};
+
 
   return (
     <div className="page-container" style={{ paddingBottom: 80 }}>
@@ -66,7 +106,13 @@ export default function Dashboard() {
               <div className="note-info">
                 <h3 className="note-title">{n.title}</h3>
 
-                <button className="download-btn">Download</button>
+                <button
+                className="download-btn"
+                onClick={() => downloadNote(n._id)}
+                >
+                 Download
+                </button>
+
               </div>
             </div>
           ))}

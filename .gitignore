@@ -1,0 +1,17 @@
+# Ignore ALL node modules
+node_modules/
+
+# User uploaded files
+uploads/
+backend/uploads/
+
+# Env
+.env
+
+# Build
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
