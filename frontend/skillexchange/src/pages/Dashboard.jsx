@@ -34,7 +34,7 @@ export default function Dashboard() {
       }
     );
 
-    // 🔥 get filename from headers
+    //  get filename from headers
     const disposition =
       res.headers["content-disposition"] || "";
 
@@ -52,7 +52,7 @@ export default function Dashboard() {
 
     const a = document.createElement("a");
     a.href = url;
-    a.download = filename;      // 🔥 real extension
+    a.download = filename;      
     document.body.appendChild(a);
     a.click();
 
