@@ -1,0 +1,142 @@
+.profile-wrapper {
+  min-height: calc(100vh - 120px);
+  background: #f3f4f6;
+  padding: 50px 20px;
+}
+
+.profile-container-big {
+  max-width: 1100px;
+  margin: auto;
+  background: white;
+  display: flex;
+  border-radius: 16px;
+  padding: 40px;
+  gap: 50px;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.08);
+}
+
+/* LEFT */
+.profile-left-big {
+  width: 35%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.profile-pic-big {
+  width: 240px;
+  height: 240px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid #e5e7eb;
+}
+
+.change-photo-btn-big {
+  margin-top: 20px;
+  padding: 10px 18px;
+  border: 1px solid #2563eb;
+  background: transparent;
+  color: #2563eb;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.change-photo-btn-big:hover {
+  background: #2563eb;
+  color: white;
+}
+
+/* RIGHT */
+.profile-right-big {
+  width: 65%;
+}
+
+.profile-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.profile-header h2 {
+  font-size: 1.8rem;
+  color: #111827;
+}
+
+.edit-btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.profile-row label {
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.profile-row p {
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: #111827;
+  margin-top: 6px;
+}
+
+.profile-row input,
+.profile-row select {
+  width: 100%;
+  padding: 10px;
+  margin-top: 6px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+}
+
+.readonly {
+  color: #6b7280;
+}
+
+.profile-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.save-btn {
+  background: #16a34a;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.cancel-btn {
+  background: #e5e7eb;
+  color: #111827;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .profile-container-big {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .profile-left-big,
+  .profile-right-big {
+    width: 100%;
+  }
+}
