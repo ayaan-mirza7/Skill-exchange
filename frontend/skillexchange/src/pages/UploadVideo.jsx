@@ -16,7 +16,7 @@ export default function UploadVideo() {
   const submit = async () => {
 
     const data = new FormData();
-
+ 
     data.append("title", title);
     data.append("description", description);
     data.append("video", file);     // 🔹 PC VIDEO
