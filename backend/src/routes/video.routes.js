@@ -19,27 +19,39 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// 🔹 PUBLIC FEED
+//  PUBLIC FEED
 router.get("/", async (req, res) => {
   const videos = await Video.find();
   res.json(videos);
 });
 
-// 🔹 UPLOAD VIDEO FROM PC
+//  UPLOAD VIDEO FROM PC
 router.post("/", auth, upload.single("video"), async (req, res) => {
 
-  const { title, description } = req.body;
+  const { title, description, cost } = req.body;
 
   const video = await Video.create({
     title,
     description,
+    cost,
     filepath: req.file.path,
     filename: req.file.filename,
     uploadedBy: req.userId
   });
 
-  res.json(video);
+  
+  const user = await User.findByIdAndUpdate(
+  req.userId,
+  { $inc: { credits: 30 } },
+  { new: true }
+);
+
+res.json({
+  credits: user.credits,
+  message: "Video uploaded!"
 });
+});
+
 
 //  WATCH WITH CREDITS
 import Access from "../models/access.model.js";

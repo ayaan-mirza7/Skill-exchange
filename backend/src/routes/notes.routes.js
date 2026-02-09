@@ -24,7 +24,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 
-router.post("/", auth, upload.single("notes"), async (req,res)=>{
+router.post("/", auth, upload.single("notes"), async (req, res) => {
 
   const { title } = req.body;
 
@@ -35,8 +35,21 @@ router.post("/", auth, upload.single("notes"), async (req,res)=>{
     uploadedBy: req.userId
   });
 
-  res.json(note);
+  
+  const user = await User.findByIdAndUpdate(
+  req.userId,
+  { $inc: { credits: 20 } },
+  { new: true }
+);
+
+res.json({
+  message: "Notes uploaded – gained 20 credits",
+  credits: user.credits,
+  note
 });
+
+});
+
 
 router.get("/", async (req,res)=>{
   const notes = await Notes.find();

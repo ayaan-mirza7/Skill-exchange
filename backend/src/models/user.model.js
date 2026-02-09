@@ -33,7 +33,7 @@ const userSchema = new mongoose.Schema({
 
   credits: {
     type: Number,
-    default: 0,
+    default: 30,
   },
 
   rating: {
