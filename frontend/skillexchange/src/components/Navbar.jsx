@@ -2,9 +2,34 @@ import Profile from "../assets/profile.svg";
 import "./Navbar.css";
 import Logo from "../assets/logo.png";
 import { NavLink, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+
 
 export default function Navbar() {
   const navigate = useNavigate();
+  const [credits, setCredits] = useState(0);
+
+  useEffect(() => {
+    const fetchCredits = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/user/profile", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+
+        if (!res.ok) throw new Error("Failed to fetch credits");
+
+        const data = await res.json();
+        setCredits(data.credits);
+      } catch (err) {
+        console.error("Credits fetch error:", err);
+      }
+    };
+
+    fetchCredits();
+  }, []);
+
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -79,7 +104,7 @@ export default function Navbar() {
 
       {/* RIGHT */}
       <div className="navbar-right">
-        <span className="credits">💰 20</span>
+        <span className="credits">💰 {credits}</span>
 
         <NavLink to="/profile">
           <img src={Profile} alt="Profile" className="profile-icon" />

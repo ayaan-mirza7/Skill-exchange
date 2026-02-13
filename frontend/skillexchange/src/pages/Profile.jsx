@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import pic from "../assets/profile.svg";
@@ -6,21 +6,70 @@ import "./Profile.css";
 
 export default function Profile() {
   const [isEditing, setIsEditing] = useState(false);
-
   const [profile, setProfile] = useState({
-    name: "Ayaan Mirza",
-    gender: "Male",
-    email: "ayaan@example.com",
-    phone: "9876543210",
+    name: "",
+    gender: "",
+    email: "",
+    phone: "",
   });
+
+  // 🔥 FETCH PROFILE FROM BACKEND
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/user/profile", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+
+        if (!res.ok) throw new Error("Failed to fetch profile");
+
+        const data = await res.json();
+
+        // ✅ IMPORTANT FIX
+        setProfile({
+          name: data.name || "",
+          gender: data.gender || "",
+          email: data.email || "",
+          phone: data.phone || "",
+        });
+      } catch (err) {
+        console.error("Profile fetch error:", err);
+      }
+    };
+
+    fetchProfile();
+  }, []);
 
   const handleChange = (e) => {
     setProfile({ ...profile, [e.target.name]: e.target.value });
   };
 
-  const handleSave = () => {
-    setIsEditing(false);
-    console.log(profile); // connect backend later
+  // 🔥 SAVE TO BACKEND
+  const handleSave = async () => {
+    try {
+      const res = await fetch("http://localhost:5000/api/user/update-profile", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({
+          name: profile.name,
+          gender: profile.gender,
+          phone: profile.phone,
+        }),
+      });
+
+      if (!res.ok) throw new Error("Update failed");
+
+      await res.json();
+
+      setIsEditing(false); // ✅ exits edit mode correctly
+    } catch (err) {
+      console.error("Update error:", err);
+    }
   };
 
   return (
@@ -42,11 +91,11 @@ export default function Profile() {
             <div className="profile-header">
               <h2>My Profile</h2>
 
-              {!isEditing ? (
+              {!isEditing && (
                 <button className="edit-btn" onClick={() => setIsEditing(true)}>
                   Edit Profile
                 </button>
-              ) : null}
+              )}
             </div>
 
             <div className="profile-form">
@@ -71,9 +120,10 @@ export default function Profile() {
                     value={profile.gender}
                     onChange={handleChange}
                   >
-                    <option>Male</option>
-                    <option>Female</option>
-                    <option>Other</option>
+                    <option value="">Select</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
                   </select>
                 ) : (
                   <p>{profile.gender}</p>
@@ -120,3 +170,4 @@ export default function Profile() {
     </>
   );
 }
+  

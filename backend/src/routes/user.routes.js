@@ -60,4 +60,27 @@ router.post("/add-wanted-skill", auth, async (req, res) => {
   }
 });
 
+router.put("/update-profile", auth, async (req, res) => {
+  try {
+    const { name, gender, phone } = req.body;
+
+    const user = await User.findById(req.userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    user.name = name;
+    user.gender = gender;
+    user.phone = phone;
+
+    await user.save();
+
+    res.json({ message: "Profile updated" });
+  } catch (err) {
+    console.log("UPDATE PROFILE ERROR:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 export default router;
