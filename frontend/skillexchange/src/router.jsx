@@ -9,6 +9,9 @@ import UploadVideo from "./pages/UploadVideo";
 import UploadNotes from "./pages/UploadNotes";
 import Profile from "./pages/Profile";
 import About from "./pages/About";
+import Explore from "./pages/explore";
+import MySkill from "./pages/myskill";
+import MyPurchase from "./pages/mypurchase";
 
 const router=createBrowserRouter([
     {path:"/",element:<Login />},
@@ -30,6 +33,9 @@ const router=createBrowserRouter([
 
     {path:"/profile", element:<Profile/>},
     {path:"/about", element:<About/>},
-
+    
+    {path:"/explore", element:<Explore/>},
+    {path:"/skills", element:<MySkill/>},
+    {path:"/purchases", element:<MyPurchase/>},
 ]);
 export default router;
