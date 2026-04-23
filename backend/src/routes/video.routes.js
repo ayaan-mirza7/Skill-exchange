@@ -3,6 +3,7 @@ import multer from "multer";
 import auth from "../middlewares/auth.js";
 import Video from "../models/video.model.js";
 import User from "../models/user.model.js";
+import Access from "../models/access.model.js";
 
 const router = express.Router();
 
@@ -25,6 +26,22 @@ router.get("/", async (req, res) => {
   res.json(videos);
 });
 
+// GET SINGLE VIDEO DETAILS (safe payload)
+router.get("/:id", async (req, res) => {
+  try {
+    const video = await Video.findById(req.params.id).populate(
+      "uploadedBy",
+      "name email",
+    );
+    if (!video) return res.status(404).json({ message: "Video not found" });
+
+    const { filepath, ...safe } = video.toObject();
+    res.json(safe);
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 //  UPLOAD VIDEO FROM PC
 router.post("/", auth, upload.single("video"), async (req, res) => {
 
@@ -34,7 +51,8 @@ router.post("/", auth, upload.single("video"), async (req, res) => {
     title,
     description,
     cost,
-    filepath: req.file.path,
+    // Store a URL-friendly path (Windows paths break browser URLs)
+    filepath: `uploads/videos/${req.file.filename}`,
     filename: req.file.filename,
     uploadedBy: req.userId
   });
@@ -54,12 +72,18 @@ res.json({
 
 
 //  WATCH WITH CREDITS
-import Access from "../models/access.model.js";
-
 router.post("/watch/:id", auth, async (req, res) => {
 
   const user = await User.findById(req.userId);
   const video = await Video.findById(req.params.id);
+  if (!video) return res.status(404).json({ message: "Video not found" });
+
+  const videoPath = (video.filepath || "").replaceAll("\\", "/");
+
+  // If it's your own upload, don't deduct credits.
+  if (video.uploadedBy?.toString?.() === req.userId) {
+    return res.json({ path: videoPath, credits: user.credits });
+  }
 
   //  CHECK IF ALREADY PURCHASED
   const already = await Access.findOne({
@@ -70,7 +94,8 @@ router.post("/watch/:id", auth, async (req, res) => {
   if (already) {
     // allow without deduction
     return res.json({
-      path: video.filepath
+      path: videoPath,
+      credits: user.credits
     });
   }
 
@@ -89,7 +114,8 @@ router.post("/watch/:id", auth, async (req, res) => {
   });
 
   res.json({
-    path: video.filepath
+    path: videoPath,
+    credits: user.credits
   });
 });
 

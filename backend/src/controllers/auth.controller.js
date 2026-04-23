@@ -34,9 +34,27 @@ export const login=async(req,res)=>{
         if(!user){
             return res.status(400).json({message:"User not found"});
         }
-        const ismatch=await bcrypt.compare(password,user.password);
+        if (!user.password) {
+            return res.status(400).json({message:"Invalid password"});
+        }
+
+        // Support older accounts that may have stored plain passwords.
+        // If it's not a bcrypt hash, fall back to direct compare and auto-upgrade.
+        const stored = user.password;
+        const isBcryptHash = typeof stored === "string" && stored.startsWith("$2");
+
+        const ismatch = isBcryptHash
+            ? await bcrypt.compare(password, stored)
+            : password === stored;
+
         if(!ismatch){
             return res.status(400).json({message:"Invalid password"});
+        }
+
+        // Auto-upgrade plain-text stored passwords to bcrypt on successful login.
+        if (!isBcryptHash) {
+            user.password = password; // triggers pre-save hashing in user model
+            await user.save();
         }
         const token=jwt.sign(
             {id:user._id},
@@ -49,7 +67,8 @@ export const login=async(req,res)=>{
             user:{
                 id:user._id,
                 name:user.name,
-                email:user.email
+                email:user.email,
+                credits: user.credits
             }
         })
     }

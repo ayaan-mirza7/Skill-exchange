@@ -43,7 +43,11 @@ export default function Dashboard() {
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
     } catch (err) {
-      alert("Not enough credits or download error");
+      const msg =
+        err?.response?.data?.message ||
+        (typeof err?.message === "string" ? err.message : null) ||
+        "Download failed";
+      alert(msg);
     }
   };
 
