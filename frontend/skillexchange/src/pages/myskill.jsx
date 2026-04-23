@@ -3,66 +3,45 @@ import api from "../api";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/footer";
+import Button from "../components/ui/Button";
+import Card from "../components/ui/Card";
 import "./myskill.css";
+import "./AppPages.css";
 
 export default function MySkill() {
-  const [user, setUser] = useState(null);
   const [videos, setVideos] = useState([]);
   const [notes, setNotes] = useState([]);
-
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  const load = async () => {
-    try {
-      const p = await api.get("/user/profile");
-      setUser(p.data);
-
-      const v = await api.get("/videos");
-      const n = await api.get("/notes");
-
-      // filter uploads by current user (field name may vary)
-      const uid = p.data._id || p.data.id;
-
-      const myVideos = v.data.filter((item) => {
-        return (
-          item.uploadedBy === uid ||
-          item.uploadedby === uid ||
-          (item.uploadedBy && item.uploadedBy._id === uid)
-        );
-      });
-
-      const myNotes = n.data.filter((item) => {
-        return (
-          item.uploadedBy === uid ||
-          item.uploadedby === uid ||
-          (item.uploadedBy && item.uploadedBy._id === uid)
-        );
-      });
-
-      setVideos(myVideos);
-      setNotes(myNotes);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
   useEffect(() => {
+    const load = async () => {
+      try {
+        const [p, v, n] = await Promise.all([
+          api.get("/user/profile"),
+          api.get("/videos"),
+          api.get("/notes"),
+        ]);
+        const uid = p.data._id || p.data.id;
+        const byUser = (item) =>
+          item.uploadedBy === uid ||
+          item.uploadedby === uid ||
+          (item.uploadedBy && item.uploadedBy._id === uid);
+        setVideos((v.data || []).filter(byUser));
+        setNotes((n.data || []).filter(byUser));
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
     load();
   }, []);
 
   const downloadNote = async (id) => {
     try {
-      const res = await api.post(
-        `/notes/download/${id}`,
-        {},
-        { responseType: "blob" }
-      );
-
-      const disposition = res.headers["content-disposition"] || "";
-      let filename = "downloaded-file";
-      const match = disposition.match(/filename="(.+)"/);
-      if (match?.[1]) filename = match[1];
-
+      const res = await api.post(`/notes/download/${id}`, {}, { responseType: "blob" });
+      const filename = res.headers["content-disposition"]?.match(/filename="(.+)"/)?.[1] || "downloaded-file";
       const blob = new Blob([res.data]);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -78,65 +57,58 @@ export default function MySkill() {
   };
 
   return (
-    <div className="page-container" style={{ paddingBottom: 80 }}>
+    <div className="page-shell">
       <Navbar />
-      <main className="content">
-        <h2 className="section-title">My Uploaded Videos</h2>
+      <main className="page-main myskills-main">
+        <h1 className="page-title">My Uploaded Skills</h1>
+        {loading && <p className="muted-text">Loading your uploads...</p>}
 
-        <div className="videos-list">
-          {videos.length === 0 && <p>No uploaded videos yet.</p>}
-          {videos.map((v) => (
-            <div key={v._id} className="video-card">
-              <div className="video-thumbnail"></div>
-              <div className="video-info">
-                <h3 className="video-title">{v.title}</h3>
-                <p className="video-desc">{v.description}</p>
-                <div className="video-meta">
-                  <span>{v.cost} credits</span>
-                  <button className="watch-btn" onClick={() => navigate(`/video/${v._id}`)}>
-                    View
-                  </button>
-                </div>
-              </div>
+        <section>
+          <h2 className="section-heading">Videos</h2>
+          {videos.length === 0 ? (
+            <div className="empty-state">You have not uploaded videos yet.</div>
+          ) : (
+            <div className="resource-grid">
+              {videos.map((v) => (
+                <Card key={v._id} className="resource-card">
+                  <div className="resource-thumb" />
+                  <div className="resource-body">
+                    <h3 className="resource-title">{v.title}</h3>
+                    <p className="resource-desc">{v.description}</p>
+                    <div className="resource-row">
+                      <span className="muted-text">{v.cost} credits</span>
+                      <Button onClick={() => navigate(`/video/${v._id}`)}>View</Button>
+                    </div>
+                  </div>
+                </Card>
+              ))}
             </div>
-          ))}
-        </div>
+          )}
+        </section>
 
-        <h2 className="section-title">My Uploaded Notes</h2>
-
-        <div className="notes-list">
-          {notes.length === 0 && <p>No uploaded notes yet.</p>}
-          {notes.map((n) => (
-            <div key={n._id} className="note-card">
-              <div className="note-icon">📄</div>
-              <div className="note-info">
-                <h3 className="note-title">{n.title}</h3>
-                <button className="download-btn" onClick={() => downloadNote(n._id || n.id)}>
-                  Download
-                </button>
-              </div>
+        <section>
+          <h2 className="section-heading">Notes</h2>
+          {notes.length === 0 ? (
+            <div className="empty-state">You have not uploaded notes yet.</div>
+          ) : (
+            <div className="resource-grid">
+              {notes.map((n) => (
+                <Card key={n._id} className="resource-card">
+                  <div className="resource-thumb notes-thumb">Notes</div>
+                  <div className="resource-body">
+                    <h3 className="resource-title">{n.title}</h3>
+                    <div className="resource-row">
+                      <span className="muted-text">{n.cost} credits</span>
+                      <Button onClick={() => downloadNote(n._id || n.id)}>Download</Button>
+                    </div>
+                  </div>
+                </Card>
+              ))}
             </div>
-          ))}
-        </div>
+          )}
+        </section>
       </main>
       <Footer />
     </div>
   );
 }
-// // import React from 'react'
-// import Navbar from "../components/navbar";
-// import Footer from "../components/footer";
-
-// function myskill() {
-//   return (
-//     <>
-//       <Navbar />
-//       <div>
-//         <h1>My Skills</h1>
-//       </div>
-//       <Footer />
-//     </>
-//   )
-// }
-
-// export default myskill

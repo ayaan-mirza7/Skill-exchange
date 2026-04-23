@@ -1,40 +1,44 @@
 import { useEffect, useState } from "react";
 import api from "../api";
 import { Link } from "react-router-dom";
+import Navbar from "../components/Navbar";
+import Footer from "../components/footer";
+import Card from "../components/ui/Card";
+import "./AppPages.css";
 
 export default function Home() {
-
   const [videos, setVideos] = useState([]);
 
   useEffect(() => {
     const load = async () => {
       const res = await api.get("/videos");
-      setVideos(res.data);
+      setVideos(res.data || []);
     };
-
     load();
   }, []);
 
   return (
-    <div>
-      <h1>Skill Videos</h1>
-
-      {videos.map(v => (
-        <div key={v._id} style={{border:"1px solid gray", margin:10, padding:10}}>
-
-          <h3>{v.title}</h3>
-
-          <p>{v.description}</p>
-
-          <p>Cost: {v.cost} credits</p>
-
-          <Link to={`/video/${v._id}`}>
-            Open
-          </Link>
-
+    <div className="page-shell">
+      <Navbar />
+      <main className="page-main">
+        <h1 className="page-title">Featured Skill Videos</h1>
+        <div className="resource-grid">
+          {videos.map((v) => (
+            <Card key={v._id} className="resource-card">
+              <div className="resource-thumb" />
+              <div className="resource-body">
+                <h3 className="resource-title">{v.title}</h3>
+                <p className="resource-desc">{v.description}</p>
+                <div className="resource-row">
+                  <span className="muted-text">{v.cost} credits</span>
+                  <Link to={`/video/${v._id}`}>Open</Link>
+                </div>
+              </div>
+            </Card>
+          ))}
         </div>
-      ))}
-
+      </main>
+      <Footer />
     </div>
   );
 }

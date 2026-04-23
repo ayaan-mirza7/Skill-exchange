@@ -3,11 +3,21 @@ import "./Navbar.css";
 import Logo from "../assets/logo.png";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import Button from "./ui/Button";
+import { useTheme } from "../context/ThemeContext";
 
+const navItems = [
+  { to: "/dashboard", label: "Dashboard" },
+  { to: "/explore", label: "Explore" },
+  { to: "/purchases", label: "Purchases" },
+  { to: "/skills", label: "My Skills" },
+  { to: "/about", label: "About" },
+];
 
 export default function Navbar() {
   const navigate = useNavigate();
   const [credits, setCredits] = useState(0);
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     const fetchCredits = async () => {
@@ -17,11 +27,9 @@ export default function Navbar() {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         });
-
         if (!res.ok) throw new Error("Failed to fetch credits");
-
         const data = await res.json();
-        setCredits(data.credits);
+        setCredits(data.credits || 0);
       } catch (err) {
         console.error("Credits fetch error:", err);
       }
@@ -30,7 +38,6 @@ export default function Navbar() {
     fetchCredits();
   }, []);
 
-
   const handleLogout = () => {
     localStorage.removeItem("token");
     navigate("/");
@@ -38,81 +45,35 @@ export default function Navbar() {
 
   return (
     <nav className="navbar">
-      {/* LEFT */}
-      <div className="navbar-left">
+      <div className="navbar-left" onClick={() => navigate("/dashboard")}>
         <img src={Logo} alt="Logo" className="brand-logo" />
         <span className="brand-text">Skill Exchange</span>
       </div>
 
-      {/* CENTER */}
       <ul className="navbar-center">
-        <li>
-          <NavLink
-            to="/dashboard"
-            className={({ isActive }) =>
-              isActive ? "nav-link active" : "nav-link"
-            }
-          >
-            Dashboard
-          </NavLink>
-        </li>
-
-        <li>
-          <NavLink
-            to="/explore"
-            className={({ isActive }) =>
-              isActive ? "nav-link active" : "nav-link"
-            }
-          >
-            Explore Videos & Notes
-          </NavLink>
-        </li>
-
-        <li>
-          <NavLink
-            to="/purchases"
-            className={({ isActive }) =>
-              isActive ? "nav-link active" : "nav-link"
-            }
-          >
-            My Purchases
-          </NavLink>
-        </li>
-
-        <li>
-          <NavLink
-            to="/skills"
-            className={({ isActive }) =>
-              isActive ? "nav-link active" : "nav-link"
-            }
-          >
-            My Skills
-          </NavLink>
-        </li>
-
-        <li>
-          <NavLink
-            to="/about"
-            className={({ isActive }) =>
-              isActive ? "nav-link active" : "nav-link"
-            }
-          >
-            About
-          </NavLink>
-        </li>
+        {navItems.map((item) => (
+          <li key={item.to}>
+            <NavLink
+              to={item.to}
+              className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}
+            >
+              {item.label}
+            </NavLink>
+          </li>
+        ))}
       </ul>
 
-      {/* RIGHT */}
       <div className="navbar-right">
-        <span className="credits">💰 {credits}</span>
-
-        <NavLink to="/profile">
+        <span className="credits">{credits} credits</span>
+        <Button variant="ghost" className="theme-btn" onClick={toggleTheme}>
+          {theme === "dark" ? "Light" : "Dark"}
+        </Button>
+        <NavLink to="/profile" className="profile-link">
           <img src={Profile} alt="Profile" className="profile-icon" />
         </NavLink>
-
-        <button className="logout-btn" onClick={handleLogout}>
+        <Button variant="danger" className="logout-btn" onClick={handleLogout}>
           Logout
-        </button>
+        </Button>
       </div>
     </nav>
   );

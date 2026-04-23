@@ -3,135 +3,108 @@ import api from "../api";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/footer";
+import Button from "../components/ui/Button";
+import Card from "../components/ui/Card";
 import "./Dashboard.css";
+import "./AppPages.css";
 
 export default function Dashboard() {
-
   const [videos, setVideos] = useState([]);
   const [notes, setNotes] = useState([]);
-
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  
   const load = async () => {
-    const v = await api.get("/videos");
-    const n = await api.get("/notes");
-
-    setVideos(v.data);
-    setNotes(n.data);
+    try {
+      const [v, n] = await Promise.all([api.get("/videos"), api.get("/notes")]);
+      setVideos(v.data || []);
+      setNotes(n.data || []);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  useEffect(()=>{
+  useEffect(() => {
     load();
-  },[]);
+  }, []);
+
   const downloadNote = async (id) => {
-  try {
-    const res = await api.post(
-      `/notes/download/${id}`,
-      {},
-      {
-        responseType: "blob"
-      }
-    );
-
-    //  get filename from headers
-    const disposition =
-      res.headers["content-disposition"] || "";
-
-    let filename = "downloaded-file";
-
-    const match = disposition.match(/filename="(.+)"/);
-
-    if (match?.[1]) {
-      filename = match[1];     // real name like abc.txt
+    try {
+      const res = await api.post(`/notes/download/${id}`, {}, { responseType: "blob" });
+      const disposition = res.headers["content-disposition"] || "";
+      const filename = disposition.match(/filename="(.+)"/)?.[1] || "downloaded-file";
+      const blob = new Blob([res.data]);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      alert("Not enough credits or download error");
     }
-
-    const blob = new Blob([res.data]);
-
-    const url = window.URL.createObjectURL(blob);
-
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;      
-    document.body.appendChild(a);
-    a.click();
-
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
-
-  } catch (err) {
-    alert("Not enough credits or download error");
-  }
-};
-
+  };
 
   return (
-    <div className="page-container" style={{ paddingBottom: 80 }}>
+    <div className="page-shell">
       <Navbar />
-      <main className="content">
-        <h2 className="section-title">📺 Videos</h2>
-        <div className="videos-list">
-          {videos.map((v) => (
-            <div key={v._id} className="video-card">
-              {/* Thumbnail (can add image later) */}
-              <div className="video-thumbnail"></div>
+      <main className="page-main dashboard-main">
+        <h1 className="page-title">Dashboard</h1>
 
-              <div className="video-info">
-                <h3 className="video-title">{v.title}</h3>
+        {loading && <p className="muted-text">Loading content...</p>}
 
-                <p className="video-desc">{v.description}</p>
-
-                <div className="video-meta">
-                  <span>{v.cost} credits</span>
-
-                  <button
-                    className="watch-btn"
-                    onClick={() => navigate(`/video/${v._id}`)}
-                  >
-                    Watch
-                  </button>
-                </div>
-              </div>
+        <section>
+          <h2 className="section-heading">Videos</h2>
+          {videos.length === 0 ? (
+            <div className="empty-state">No videos available right now.</div>
+          ) : (
+            <div className="resource-grid">
+              {videos.map((v) => (
+                <Card key={v._id} className="resource-card">
+                  <div className="resource-thumb" />
+                  <div className="resource-body">
+                    <h3 className="resource-title">{v.title}</h3>
+                    <p className="resource-desc">{v.description}</p>
+                    <div className="resource-row">
+                      <span className="muted-text">{v.cost} credits</span>
+                      <Button onClick={() => navigate(`/video/${v._id}`)}>Watch</Button>
+                    </div>
+                  </div>
+                </Card>
+              ))}
             </div>
-          ))}
-        </div>
+          )}
+        </section>
 
-        <h2 className="section-title">📁 Notes</h2>
-
-        <div className="notes-list">
-          {notes.map((n) => (
-            <div key={n._id} className="note-card">
-              <div className="note-icon">📄</div>
-
-              <div className="note-info">
-                <h3 className="note-title">{n.title}</h3>
-
-                <button
-                className="download-btn"
-                onClick={() => downloadNote(n._id)}
-                >
-                 Download
-                </button>
-
-              </div>
+        <section className="dashboard-notes">
+          <h2 className="section-heading">Notes</h2>
+          {notes.length === 0 ? (
+            <div className="empty-state">No notes available right now.</div>
+          ) : (
+            <div className="resource-grid">
+              {notes.map((n) => (
+                <Card key={n._id} className="resource-card">
+                  <div className="resource-thumb notes-thumb">Notes</div>
+                  <div className="resource-body">
+                    <h3 className="resource-title">{n.title}</h3>
+                    <div className="resource-row">
+                      <span className="muted-text">{n.cost} credits</span>
+                      <Button onClick={() => downloadNote(n._id)}>Download</Button>
+                    </div>
+                  </div>
+                </Card>
+              ))}
             </div>
-          ))}
-        </div>
+          )}
+        </section>
 
-        <div className="bottom-action-bar">
-          <button
-            className="action-btn video-btn"
-            onClick={() => navigate("/upload-video")}
-          >
-            ➕ Upload Video
-          </button>
-
-          <button
-            className="action-btn notes-btn"
-            onClick={() => navigate("/upload-notes")}
-          >
-            ➕ Upload Notes
-          </button>
+        <div className="dashboard-actions">
+          <Button onClick={() => navigate("/upload-video")}>Upload Video</Button>
+          <Button variant="secondary" onClick={() => navigate("/upload-notes")}>
+            Upload Notes
+          </Button>
         </div>
       </main>
       <Footer />

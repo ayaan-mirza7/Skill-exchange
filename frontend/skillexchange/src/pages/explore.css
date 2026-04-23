@@ -1,114 +1,45 @@
-.explore-hero {
-  background: linear-gradient(90deg, #2b6cb0, #63b3ed);
-  color: white;
-  padding: 36px 20px;
-  border-radius: 8px;
-  margin: 18px;
-}
-.hero-inner {
-  max-width: 1100px;
-  margin: 0 auto;
-}
-.explore-hero h1 {
-  margin: 0 0 6px;
-  font-size: 28px;
-}
-.explore-hero p {
-  margin: 0 0 12px;
-  opacity: 0.95;
-}
-.explore-actions {
+.explore-main {
   display: flex;
-  gap: 12px;
-  align-items: center;
+  flex-direction: column;
+  gap: 1.2rem;
 }
-.explore-search {
-  flex: 1;
-  padding: 10px 12px;
-  border-radius: 8px;
-  border: 0;
-  max-width: 520px;
+
+.explore-hero {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1rem;
+  box-shadow: var(--shadow-sm);
 }
-.explore-tabs button {
-  margin-right: 8px;
-  padding: 8px 12px;
-  border-radius: 8px;
-  border: 0;
-  background: rgba(255, 255, 255, 0.15);
-  color: white;
+
+.explore-controls {
+  margin-top: 1rem;
+  display: grid;
+  gap: 0.8rem;
 }
-.explore-tabs button.active {
-  background: white;
-  color: #1a202c;
+
+.explore-tabs {
+  display: flex;
+  gap: 0.55rem;
+  flex-wrap: wrap;
 }
-.explore-content {
-  max-width: 1100px;
-  margin: 18px auto;
-  padding: 8px;
-}
-.section-title {
-  margin: 12px 0;
-}
+
 .skills-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 0.5rem;
 }
+
 .skill-chip {
-  padding: 8px 12px;
-  border-radius: 20px;
-  border: 1px solid #e2e8f0;
-  background: white;
-  color: #1a202c;
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  border-radius: 999px;
+  padding: 0.4rem 0.75rem;
+  cursor: pointer;
 }
-.cards-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 12px;
-}
-.resource-card {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-.card-thumb {
-  height: 120px;
-  background: linear-gradient(90deg, #edf2f7, #e6fffa);
-}
-.note-thumb {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 36px;
-}
-.card-body {
-  padding: 12px;
-}
-.card-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 10px;
-}
-.cost {
-  font-weight: 700;
-  color: #1a202c;
-}
-.muted {
-  color: #4a5568;
-  font-size: 13px;
-}
-@media (max-width: 600px) {
-  .explore-actions {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  .explore-tabs {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-  }
+
+.skill-chip:hover {
+  border-color: var(--primary);
+  color: var(--primary);
 }

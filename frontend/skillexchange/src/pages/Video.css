@@ -1,0 +1,30 @@
+.video-page {
+  display: grid;
+}
+
+.video-player-card {
+  overflow: hidden;
+}
+
+.player-wrap {
+  background: #000;
+  aspect-ratio: 16 / 9;
+}
+
+.video-element {
+  width: 100%;
+  height: 100%;
+}
+
+.video-placeholder {
+  color: #fff;
+  display: grid;
+  place-items: center;
+  height: 100%;
+}
+
+.video-details {
+  padding: 1rem;
+  display: grid;
+  gap: 0.7rem;
+}

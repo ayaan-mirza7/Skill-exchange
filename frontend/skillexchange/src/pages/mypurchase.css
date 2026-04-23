@@ -1,0 +1,11 @@
+.purchases-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.purchases-empty {
+  display: grid;
+  gap: 0.9rem;
+  justify-items: center;
+}

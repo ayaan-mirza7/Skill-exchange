@@ -1,110 +1,60 @@
-* {
-  margin: 0;
-}
 .auth-container {
   min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  background: linear-gradient(135deg, #eef2f3, #d9e2ec);
-  font-family:
-    "Inter",
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(130deg, color-mix(in srgb, var(--primary) 20%, var(--bg)), var(--bg));
+  padding: 1rem;
 }
 
 .auth-card {
-  width: 100%;
-  max-width: 420px;
-  background: #ffffff;
-  padding: 36px;
-  border-radius: 12px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+  width: min(440px, 100%);
+  padding: 1rem;
 }
 
 .auth-title {
-  text-align: center;
-  font-size: 26px;
-  font-weight: 600;
-  margin-bottom: 24px;
-  color: #1f2933;
+  margin: 0 0 0.8rem;
+  font-size: 1.45rem;
 }
 
 .auth-form {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.auth-form input {
-  width: 100%;
-  padding: 10px;
-  font-size: 15px;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  outline: none;
-  transition: all 0.2s ease;
-}
-
-.auth-form input:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
-}
-
-.auth-btn {
-  margin-top: 10px;
-  padding: 12px;
-  font-size: 15px;
-  font-weight: 600;
-  background: #3b82f6;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.2s ease, transform 0.1s ease;
-}
-.auth-btn:hover {
-  background: #2563eb;
-}
-.auth-btn:active {
-  transform: scale(0.98);
+  display: grid;
+  gap: 0.7rem;
 }
 
 .auth-switch {
-  margin-top: 16px;
-  text-align: center;
-  font-size: 14px;
-  color: #475569;
+  margin-top: 0.75rem;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
 }
 
-.auth-switch span {
-  color: #3b82f6;
-  font-weight: 500;
-  cursor: pointer;
+.auth-switch a {
+  color: var(--primary);
+  text-decoration: none;
 }
 
-.auth-switch span:hover {
+.auth-switch a:hover {
   text-decoration: underline;
+}
+
+.auth-error {
+  margin: 0;
+  color: var(--danger);
+  font-size: 0.9rem;
 }
 
 .brand-header {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 12px;
-  margin-bottom: 25px;
+  gap: 0.6rem;
+  margin-bottom: 0.9rem;
 }
 
 .brand-logo {
-  width: 50px;
-  height: 50px;
-  object-fit: contain;
+  width: 42px;
+  height: 42px;
 }
 
 .brand-text {
-  font-size: 26px;
-  font-weight: 600;
-  color: #1f2937;
+  margin: 0;
+  font-size: 1.45rem;
 }
