@@ -2,9 +2,9 @@ import Profile from "../assets/profile.svg";
 import "./Navbar.css";
 import Logo from "../assets/logo.png";
 import { NavLink, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
 import Button from "./ui/Button";
 import { useTheme } from "../context/ThemeContext";
+import { useUser } from "../context/UserContext";
 
 const navItems = [
   { to: "/dashboard", label: "Dashboard" },
@@ -16,27 +16,8 @@ const navItems = [
 
 export default function Navbar() {
   const navigate = useNavigate();
-  const [credits, setCredits] = useState(0);
   const { theme, toggleTheme } = useTheme();
-
-  useEffect(() => {
-    const fetchCredits = async () => {
-      try {
-        const res = await fetch("http://localhost:5000/api/user/profile", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
-        if (!res.ok) throw new Error("Failed to fetch credits");
-        const data = await res.json();
-        setCredits(data.credits || 0);
-      } catch (err) {
-        console.error("Credits fetch error:", err);
-      }
-    };
-
-    fetchCredits();
-  }, []);
+  const { user } = useUser();
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -64,7 +45,13 @@ export default function Navbar() {
       </ul>
 
       <div className="navbar-right">
-        <span className="credits">{credits} credits</span>
+        <button
+          className="credits credits-btn"
+          onClick={() => navigate("/purchase-credits")}
+          title="Purchase credits"
+        >
+          {user?.credits ?? 0} credits
+        </button>
         <Button variant="ghost" className="theme-btn" onClick={toggleTheme}>
           {theme === "dark" ? "Light" : "Dark"}
         </Button>

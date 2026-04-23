@@ -71,6 +71,15 @@
   padding: 0.35rem 0.6rem;
 }
 
+.credits-btn {
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+
+.credits-btn:hover {
+  border-color: color-mix(in srgb, var(--success) 35%, transparent);
+}
+
 .theme-btn,
 .logout-btn {
   padding: 0.45rem 0.75rem;
@@ -106,6 +115,6 @@
 
 @media (max-width: 620px) {
   .credits {
-    display: none;
+    display: inline-block;
   }
 }

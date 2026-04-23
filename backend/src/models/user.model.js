@@ -1,6 +1,27 @@
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 
+const creditPurchaseSchema = new mongoose.Schema(
+  {
+    credits: { type: Number, required: true, min: 1 },
+    amountInr: { type: Number, required: true, min: 100 },
+    paymentId: { type: String, default: "" },
+    status: { type: String, enum: ["success", "failed"], default: "success" },
+  },
+  { _id: false, timestamps: true },
+);
+
+const unlockTransactionSchema = new mongoose.Schema(
+  {
+    contentType: { type: String, enum: ["video", "doc"], required: true },
+    contentId: { type: mongoose.Schema.Types.ObjectId, required: true },
+    cost: { type: Number, required: true, min: 0 },
+    reward: { type: Number, default: 0, min: 0 },
+    netDeduction: { type: Number, required: true, min: 0 },
+  },
+  { _id: false, timestamps: true },
+);
+
 const userSchema = new mongoose.Schema(
   {
     name: {
@@ -35,6 +56,7 @@ const userSchema = new mongoose.Schema(
     credits: {
       type: Number,
       default: 50,
+      min: 0,
     },
 
     rating: {
@@ -49,6 +71,26 @@ const userSchema = new mongoose.Schema(
     phone: {
       type: String,
       default: "",
+    },
+    purchasedSkills: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Video",
+      },
+    ],
+    purchasedDocs: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Notes",
+      },
+    ],
+    creditPurchases: {
+      type: [creditPurchaseSchema],
+      default: [],
+    },
+    unlockTransactions: {
+      type: [unlockTransactionSchema],
+      default: [],
     },
   },
   { timestamps: true },

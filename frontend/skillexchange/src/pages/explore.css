@@ -43,3 +43,11 @@
   border-color: var(--primary);
   color: var(--primary);
 }
+
+.success-text {
+  color: #2f9e44;
+}
+
+.error-text {
+  color: #e03131;
+}

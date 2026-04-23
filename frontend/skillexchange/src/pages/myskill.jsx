@@ -5,6 +5,7 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/footer";
 import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
+import { useUser } from "../context/UserContext";
 import "./myskill.css";
 import "./AppPages.css";
 
@@ -13,6 +14,7 @@ export default function MySkill() {
   const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { user } = useUser();
 
   useEffect(() => {
     const load = async () => {
@@ -51,7 +53,7 @@ export default function MySkill() {
       a.click();
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
-    } catch (err) {
+    } catch {
       alert("Not enough credits or download error");
     }
   };
@@ -100,6 +102,39 @@ export default function MySkill() {
                     <div className="resource-row">
                       <span className="muted-text">{n.cost} credits</span>
                       <Button onClick={() => downloadNote(n._id || n.id)}>Download</Button>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          )}
+        </section>
+      </main>
+      <main className="page-main myskills-main">
+        <section>
+          <h2 className="section-heading">Unlocked Purchases</h2>
+          {(!user?.purchasedSkills?.length && !user?.purchasedDocs?.length) ? (
+            <div className="empty-state">No unlocked content yet.</div>
+          ) : (
+            <div className="resource-grid">
+              {(user?.purchasedSkills || []).map((v) => (
+                <Card key={v._id || v} className="resource-card">
+                  <div className="resource-body">
+                    <h3 className="resource-title">{v.title || "Unlocked Video"}</h3>
+                    <div className="resource-row">
+                      <span className="muted-text">{v.cost ?? "-"} credits</span>
+                      <Button onClick={() => navigate(`/video/${v._id || v}`)}>Unlocked</Button>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+              {(user?.purchasedDocs || []).map((n) => (
+                <Card key={n._id || n} className="resource-card">
+                  <div className="resource-body">
+                    <h3 className="resource-title">{n.title || "Unlocked Notes"}</h3>
+                    <div className="resource-row">
+                      <span className="muted-text">{n.cost ?? "-"} credits</span>
+                      <Button onClick={() => navigate("/explore")}>Unlocked</Button>
                     </div>
                   </div>
                 </Card>

@@ -28,3 +28,17 @@
   display: grid;
   gap: 0.7rem;
 }
+
+.video-actions {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.success-text {
+  color: #2f9e44;
+}
+
+.error-text {
+  color: #e03131;
+}

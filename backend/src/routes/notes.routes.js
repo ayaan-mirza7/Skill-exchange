@@ -27,10 +27,13 @@ const upload = multer({ storage });
 
 router.post("/", auth, upload.single("notes"), async (req, res) => {
 
-  const { title } = req.body;
+  const { title, cost } = req.body;
+  const parsedCost = Number(cost);
+  const safeCost = Number.isFinite(parsedCost) && parsedCost > 0 ? Math.floor(parsedCost) : 3;
 
   const note = await Notes.create({
     title,
+    cost: safeCost,
     // Store a URL-friendly path (Windows paths break browser URLs)
     filepath: `uploads/notes/${req.file.filename}`,
     filename: req.file.filename,
@@ -102,6 +105,8 @@ router.post("/download/:id", auth, async (req, res) => {
         // ignore duplicate unlock
       }
     }
+
+    await User.findByIdAndUpdate(req.userId, { $addToSet: { purchasedDocs: note._id } });
 
     const type = mime.lookup(note.filename) || "application/octet-stream";
     res.setHeader("Content-Type", type);

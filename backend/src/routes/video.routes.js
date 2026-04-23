@@ -46,11 +46,13 @@ router.get("/:id", async (req, res) => {
 router.post("/", auth, upload.single("video"), async (req, res) => {
 
   const { title, description, cost } = req.body;
+  const parsedCost = Number(cost);
+  const safeCost = Number.isFinite(parsedCost) && parsedCost > 0 ? Math.floor(parsedCost) : 5;
 
   const video = await Video.create({
     title,
     description,
-    cost,
+    cost: safeCost,
     // Store a URL-friendly path (Windows paths break browser URLs)
     filepath: `uploads/videos/${req.file.filename}`,
     filename: req.file.filename,
@@ -81,7 +83,10 @@ router.post("/watch/:id", auth, async (req, res) => {
   const videoPath = (video.filepath || "").replaceAll("\\", "/");
 
   // If it's your own upload, don't deduct credits.
-  if (video.uploadedBy?.toString?.() === req.userId) {
+  if (
+    video.uploadedBy?.toString?.() === req.userId ||
+    video.uploadedby?.toString?.() === req.userId
+  ) {
     return res.json({ path: videoPath, credits: user.credits });
   }
 
@@ -92,6 +97,7 @@ router.post("/watch/:id", auth, async (req, res) => {
   });
 
   if (already) {
+    await User.findByIdAndUpdate(req.userId, { $addToSet: { purchasedSkills: video._id } });
     // allow without deduction
     return res.json({
       path: videoPath,
@@ -106,6 +112,7 @@ router.post("/watch/:id", auth, async (req, res) => {
 
   user.credits -= video.cost;
   await user.save();
+  await User.findByIdAndUpdate(req.userId, { $addToSet: { purchasedSkills: video._id } });
 
   //SAVE ACCESS RECORD
   await Access.create({

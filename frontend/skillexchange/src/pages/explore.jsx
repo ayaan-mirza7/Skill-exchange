@@ -1,11 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import api from "../api";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/footer";
 import Input from "../components/ui/Input";
 import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
+import TransactionModal from "../components/TransactionModal";
+import RewardModal from "../components/RewardModal";
+import { useUser } from "../context/UserContext";
 import "./explore.css";
 import "./AppPages.css";
 
@@ -15,7 +18,13 @@ export default function Explore() {
   const [query, setQuery] = useState("");
   const [tab, setTab] = useState("all");
   const [loading, setLoading] = useState(true);
+  const [unlockModal, setUnlockModal] = useState({ open: false, note: null });
+  const [unlocking, setUnlocking] = useState(false);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
   const navigate = useNavigate();
+  const { user, refreshUser, updateCredits } = useUser();
+  const [rewardPopup, setRewardPopup] = useState({ open: false, spent: 0, reward: 0 });
 
   useEffect(() => {
     const load = async () => {
@@ -55,6 +64,48 @@ export default function Explore() {
     }
   };
 
+  const startNoteUnlock = (note) => {
+    setError("");
+    setMessage("");
+    setUnlockModal({ open: true, note });
+  };
+
+  const confirmUnlockNote = async () => {
+    if (!unlockModal.note?._id) return;
+    setUnlocking(true);
+    setError("");
+    setMessage("");
+    try {
+      const res = await api.post("/user/unlock-content", {
+        contentType: "doc",
+        contentId: unlockModal.note._id,
+      });
+      if (typeof res?.data?.credits === "number") {
+        updateCredits(res.data.credits);
+      }
+      await refreshUser();
+      if (res.data?.rewardMessage) setMessage(res.data.rewardMessage);
+      if (!res?.data?.alreadyUnlocked) {
+        setRewardPopup({
+          open: true,
+          spent: Number(res?.data?.spentCredits ?? unlockModal.note?.cost ?? 3),
+          reward: Number(res?.data?.reward ?? 0),
+        });
+      }
+      setUnlockModal({ open: false, note: null });
+      await downloadNote(unlockModal.note._id);
+    } catch (err) {
+      const apiMessage = err?.response?.data?.message || "Unlock failed";
+      if (apiMessage === "Insufficient Credits") {
+        setError("Insufficient Credits");
+      } else {
+        setError(apiMessage);
+      }
+    } finally {
+      setUnlocking(false);
+    }
+  };
+
   const skills = useMemo(() => {
     const freq = {};
     [...videos, ...notes].forEach((item) => {
@@ -73,8 +124,14 @@ export default function Explore() {
       .map(([word]) => word);
   }, [videos, notes]);
 
-  const filteredVideos = videos.filter((v) => v.title.toLowerCase().includes(query.toLowerCase()));
-  const filteredNotes = notes.filter((n) => n.title.toLowerCase().includes(query.toLowerCase()));
+  const purchasedVideoIds = new Set((user?.purchasedSkills || []).map((item) => item._id || item));
+  const purchasedNoteIds = new Set((user?.purchasedDocs || []).map((item) => item._id || item));
+  const filteredVideos = videos
+    .filter((v) => !purchasedVideoIds.has(v._id))
+    .filter((v) => v.title.toLowerCase().includes(query.toLowerCase()));
+  const filteredNotes = notes
+    .filter((n) => !purchasedNoteIds.has(n._id))
+    .filter((n) => n.title.toLowerCase().includes(query.toLowerCase()));
 
   return (
     <div className="page-shell">
@@ -104,6 +161,12 @@ export default function Explore() {
         </section>
 
         {loading && <p className="muted-text">Loading resources...</p>}
+        {message && <p className="success-text">{message}</p>}
+        {error && (
+          <p className="error-text">
+            {error} - <Link to="/purchase-credits">Purchase credits</Link>
+          </p>
+        )}
 
         {(tab === "all" || tab === "skills") && (
           <section>
@@ -132,7 +195,7 @@ export default function Explore() {
                     <p className="resource-desc">{v.description}</p>
                     <div className="resource-row">
                       <span className="muted-text">{v.cost} credits</span>
-                      <Button onClick={() => navigate(`/video/${v._id}`)}>Watch</Button>
+                      <Button onClick={() => navigate(`/video/${v._id}`)}>Unlock</Button>
                     </div>
                   </div>
                 </Card>
@@ -152,7 +215,7 @@ export default function Explore() {
                     <h3 className="resource-title">{n.title}</h3>
                     <div className="resource-row">
                       <span className="muted-text">{n.cost} credits</span>
-                      <Button onClick={() => downloadNote(n._id || n.id)}>Download</Button>
+                      <Button onClick={() => startNoteUnlock(n)}>Unlock</Button>
                     </div>
                   </div>
                 </Card>
@@ -161,6 +224,21 @@ export default function Explore() {
           </section>
         )}
       </main>
+      <TransactionModal
+        open={unlockModal.open}
+        title="Unlock Notes"
+        requiredCredits={Number(unlockModal.note?.cost ?? 3)}
+        currentCredits={Number(user?.credits ?? 0)}
+        loading={unlocking}
+        onCancel={() => setUnlockModal({ open: false, note: null })}
+        onConfirm={confirmUnlockNote}
+      />
+      <RewardModal
+        open={rewardPopup.open}
+        spent={rewardPopup.spent}
+        reward={rewardPopup.reward}
+        onClose={() => setRewardPopup({ open: false, spent: 0, reward: 0 })}
+      />
       <Footer />
     </div>
   );

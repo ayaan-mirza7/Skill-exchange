@@ -10,17 +10,37 @@ import "./AppPages.css";
 
 export default function MyPurchase() {
   const [videos, setVideos] = useState([]);
+  const [docs, setDocs] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+
+  const downloadNote = async (id) => {
+    try {
+      const res = await api.post(`/notes/download/${id}`, {}, { responseType: "blob" });
+      const filename = res.headers["content-disposition"]?.match(/filename="(.+)"/)?.[1] || "downloaded-file";
+      const blob = new Blob([res.data]);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch {
+      // keep page stable even if download fails
+    }
+  };
 
   useEffect(() => {
     const load = async () => {
       try {
-        const [acc, v] = await Promise.all([api.get("/accesses"), api.get("/videos")]);
-        const ids = (acc.data || []).map((a) => (a.videoId ? a.videoId._id || a.videoId : a.video));
-        setVideos((v.data || []).filter((video) => ids.includes(video._id)));
-      } catch (err) {
+        const res = await api.get("/user/purchases");
+        setVideos(res.data?.purchasedSkills || []);
+        setDocs(res.data?.purchasedDocs || []);
+      } catch {
         setVideos([]);
+        setDocs([]);
       } finally {
         setLoading(false);
       }
@@ -36,7 +56,7 @@ export default function MyPurchase() {
 
         {loading && <p className="muted-text">Loading purchases...</p>}
 
-        {!loading && videos.length === 0 && (
+        {!loading && videos.length === 0 && docs.length === 0 && (
           <div className="empty-state purchases-empty">
             <p>No purchases found yet.</p>
             <Button onClick={() => navigate("/explore")}>Browse Explore Page</Button>
@@ -58,6 +78,24 @@ export default function MyPurchase() {
             </Card>
           ))}
         </div>
+
+        <section>
+          <h2 className="section-heading">Purchased Docs</h2>
+          <div className="resource-grid">
+            {docs.map((d) => (
+              <Card key={d._id} className="resource-card">
+                <div className="resource-thumb notes-thumb">Notes</div>
+                <div className="resource-body">
+                  <h3 className="resource-title">{d.title}</h3>
+                  <div className="resource-row">
+                    <span className="muted-text">{d.cost} credits</span>
+                    <Button onClick={() => downloadNote(d._id || d.id)}>Download</Button>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </section>
       </main>
       <Footer />
     </div>

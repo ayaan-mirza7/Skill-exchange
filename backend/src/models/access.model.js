@@ -17,4 +17,6 @@ const accessSchema = new mongoose.Schema({
   }
 });
 
+accessSchema.index({ userId: 1, videoId: 1 }, { unique: true });
+
 export default mongoose.model("Access", accessSchema);

@@ -11,6 +11,7 @@ import About from "./pages/About";
 import Explore from "./pages/explore";
 import MySkill from "./pages/myskill";
 import MyPurchase from "./pages/mypurchase";
+import PurchaseCredits from "./pages/PurchaseCredits";
 
 const withAuth = (node) => <Protectedroute>{node}</Protectedroute>;
 
@@ -27,6 +28,7 @@ const router = createBrowserRouter([
   { path: "/explore", element: withAuth(<Explore />) },
   { path: "/skills", element: withAuth(<MySkill />) },
   { path: "/purchases", element: withAuth(<MyPurchase />) },
+  { path: "/purchase-credits", element: withAuth(<PurchaseCredits />) },
 ]);
 
 export default router;
