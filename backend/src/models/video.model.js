@@ -9,6 +9,11 @@ const videoSchema = new mongoose.Schema({
 
   cost: { type: Number, default: 5 },
 
+  uploadedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User"
+  },
+
   uploadedby: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User"

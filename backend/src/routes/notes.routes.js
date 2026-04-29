@@ -1,65 +1,75 @@
 import express from "express";
 import multer from "multer";
+import fs from "fs";
+import path from "path";
+import mime from "mime-types";
 import auth from "../middlewares/auth.js";
 import Notes from "../models/notes.model.js";
 import User from "../models/user.model.js";
 import NoteAccess from "../models/noteAccess.model.js";
-import fs from "fs";
-import path from "path";
-import mime from "mime-types";   // 🔥 install this
-
+import {
+  buildUploadPath,
+  ensureUploadDir,
+  notesUploadDir,
+} from "../utils/uploadPaths.js";
 
 const router = express.Router();
 
-
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "uploads/notes");
+    cb(null, ensureUploadDir(notesUploadDir));
   },
-
   filename: (req, file, cb) => {
-    cb(null, Date.now() + "-" + file.originalname);
-  }
+    cb(null, `${Date.now()}-${file.originalname}`);
+  },
 });
 
 const upload = multer({ storage });
 
-
 router.post("/", auth, upload.single("notes"), async (req, res) => {
+  try {
+    const { title, cost } = req.body;
+    if (!title?.trim()) {
+      return res.status(400).json({ message: "Title is required" });
+    }
 
-  const { title, cost } = req.body;
-  const parsedCost = Number(cost);
-  const safeCost = Number.isFinite(parsedCost) && parsedCost > 0 ? Math.floor(parsedCost) : 3;
+    if (!req.file) {
+      return res.status(400).json({ message: "Please choose a notes file to upload" });
+    }
 
-  const note = await Notes.create({
-    title,
-    cost: safeCost,
-    // Store a URL-friendly path (Windows paths break browser URLs)
-    filepath: `uploads/notes/${req.file.filename}`,
-    filename: req.file.filename,
-    uploadedBy: req.userId
-  });
+    const parsedCost = Number(cost);
+    const safeCost = Number.isFinite(parsedCost) && parsedCost > 0 ? Math.floor(parsedCost) : 3;
 
-  
-  const user = await User.findByIdAndUpdate(
-  req.userId,
-  { $inc: { credits: 20 } },
-  { new: true }
-);
+    const note = await Notes.create({
+      title: title.trim(),
+      cost: safeCost,
+      filepath: buildUploadPath("uploads", "notes", req.file.filename),
+      filename: req.file.filename,
+      uploadedBy: req.userId,
+    });
 
-res.json({
-  message: "Notes uploaded – gained 20 credits",
-  credits: user.credits,
-  note
+    const user = await User.findByIdAndUpdate(
+      req.userId,
+      { $inc: { credits: 20 } },
+      { new: true },
+    );
+
+    return res.json({
+      message: "Notes uploaded - gained 20 credits",
+      credits: user?.credits ?? 0,
+      note,
+    });
+  } catch (err) {
+    console.error("Notes upload error:", err);
+    return res.status(500).json({ message: "Notes upload failed" });
+  }
 });
 
-});
-
-
-router.get("/", async (req,res)=>{
+router.get("/", async (req, res) => {
   const notes = await Notes.find();
   res.json(notes);
 });
+
 router.post("/download/:id", auth, async (req, res) => {
   try {
     const user = await User.findById(req.userId);
@@ -76,7 +86,6 @@ router.post("/download/:id", auth, async (req, res) => {
     const cost = Number(note.cost ?? 3);
     const isOwner = note.uploadedBy?.toString?.() === req.userId;
 
-    // If it's your own upload, don't deduct credits.
     if (isOwner) {
       const type = mime.lookup(note.filename) || "application/octet-stream";
       res.setHeader("Content-Type", type);
@@ -84,7 +93,6 @@ router.post("/download/:id", auth, async (req, res) => {
       return res.download(absolutePath, note.filename);
     }
 
-    // If already unlocked before, don't deduct again.
     const already = await NoteAccess.findOne({
       userId: req.userId,
       noteId: note._id,
@@ -98,11 +106,10 @@ router.post("/download/:id", auth, async (req, res) => {
       user.credits -= cost;
       await user.save();
 
-      // If two requests race, a duplicate key error can happen; that's fine.
       try {
         await NoteAccess.create({ userId: req.userId, noteId: note._id });
       } catch (e) {
-        // ignore duplicate unlock
+        // Ignore duplicate unlocks from concurrent requests.
       }
     }
 

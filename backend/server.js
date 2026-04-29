@@ -6,16 +6,25 @@ import authroutes from './src/routes/auth.routes.js';
 import notesroutes from "./src/routes/notes.routes.js";
 import userroutes from './src/routes/user.routes.js'
 import videoroutes from "./src/routes/video.routes.js";
+import {
+    ensureUploadDir,
+    notesUploadDir,
+    uploadsRoot,
+    videosUploadDir,
+} from "./src/utils/uploadPaths.js";
 dotenv.config();
 connectdb();
 const app=express();
+ensureUploadDir(uploadsRoot);
+ensureUploadDir(videosUploadDir);
+ensureUploadDir(notesUploadDir);
 app.use(cors());
 app.use(express.json());
 app.get('/',(req,res)=>{
     res.send('Skill Exchange API Runnning ..');
 });
 app.use("/api/videos", videoroutes);
-app.use("/uploads", express.static("uploads"));
+app.use("/uploads", express.static(uploadsRoot));
 app.use("/api/notes", notesroutes);
 app.use('/api/auth',authroutes);
 app.use("/api/user",userroutes);

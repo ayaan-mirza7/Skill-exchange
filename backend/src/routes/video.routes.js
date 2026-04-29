@@ -4,13 +4,18 @@ import auth from "../middlewares/auth.js";
 import Video from "../models/video.model.js";
 import User from "../models/user.model.js";
 import Access from "../models/access.model.js";
+import {
+  buildUploadPath,
+  ensureUploadDir,
+  videosUploadDir,
+} from "../utils/uploadPaths.js";
 
 const router = express.Router();
 
 // 🔹 MULTER STORAGE
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "uploads/videos");
+    cb(null, ensureUploadDir(videosUploadDir));
   },
 
   filename: (req, file, cb) => {
@@ -44,32 +49,43 @@ router.get("/:id", async (req, res) => {
 
 //  UPLOAD VIDEO FROM PC
 router.post("/", auth, upload.single("video"), async (req, res) => {
+  try {
+    const { title, description, cost } = req.body;
+    if (!title?.trim()) {
+      return res.status(400).json({ message: "Title is required" });
+    }
 
-  const { title, description, cost } = req.body;
-  const parsedCost = Number(cost);
-  const safeCost = Number.isFinite(parsedCost) && parsedCost > 0 ? Math.floor(parsedCost) : 5;
+    if (!req.file) {
+      return res.status(400).json({ message: "Please choose a video file to upload" });
+    }
 
-  const video = await Video.create({
-    title,
-    description,
-    cost: safeCost,
-    // Store a URL-friendly path (Windows paths break browser URLs)
-    filepath: `uploads/videos/${req.file.filename}`,
-    filename: req.file.filename,
-    uploadedBy: req.userId
-  });
+    const parsedCost = Number(cost);
+    const safeCost = Number.isFinite(parsedCost) && parsedCost > 0 ? Math.floor(parsedCost) : 5;
 
-  
-  const user = await User.findByIdAndUpdate(
-  req.userId,
-  { $inc: { credits: 30 } },
-  { new: true }
-);
+    await Video.create({
+      title: title.trim(),
+      description: description?.trim?.() || "",
+      cost: safeCost,
+      filepath: buildUploadPath("uploads", "videos", req.file.filename),
+      filename: req.file.filename,
+      uploadedBy: req.userId,
+      uploadedby: req.userId,
+    });
 
-res.json({
-  credits: user.credits,
-  message: "Video uploaded!"
-});
+    const user = await User.findByIdAndUpdate(
+      req.userId,
+      { $inc: { credits: 30 } },
+      { new: true }
+    );
+
+    return res.json({
+      credits: user?.credits ?? 0,
+      message: "Video uploaded!"
+    });
+  } catch (err) {
+    console.error("Video upload error:", err);
+    return res.status(500).json({ message: "Video upload failed" });
+  }
 });
 
 
