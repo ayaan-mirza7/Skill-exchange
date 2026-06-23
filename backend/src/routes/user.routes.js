@@ -13,8 +13,19 @@ router.get("/profile",auth,async(req,res)=>{
     try{
         const user=await User.findById(req.userId)
           .select("-password")
-          .populate("purchasedSkills", "title description cost")
-          .populate("purchasedDocs", "title cost");
+          .populate({
+            path: "purchasedSkills",
+            select: "title description cost uploadedBy uploadedby",
+            populate: [
+              { path: "uploadedBy", select: "name email" },
+              { path: "uploadedby", select: "name email" },
+            ],
+          })
+          .populate({
+            path: "purchasedDocs",
+            select: "title cost uploadedBy",
+            populate: { path: "uploadedBy", select: "name email" },
+          });
         return res.json(user);
     }
     catch(err){
@@ -25,8 +36,19 @@ router.get("/purchases", auth, async (req, res) => {
   try {
     const user = await User.findById(req.userId)
       .select("purchasedSkills purchasedDocs")
-      .populate("purchasedSkills", "title description cost")
-      .populate("purchasedDocs", "title cost");
+      .populate({
+        path: "purchasedSkills",
+        select: "title description cost uploadedBy uploadedby",
+        populate: [
+          { path: "uploadedBy", select: "name email" },
+          { path: "uploadedby", select: "name email" },
+        ],
+      })
+      .populate({
+        path: "purchasedDocs",
+        select: "title cost uploadedBy",
+        populate: { path: "uploadedBy", select: "name email" },
+      });
     return res.json({
       purchasedSkills: user?.purchasedSkills || [],
       purchasedDocs: user?.purchasedDocs || [],

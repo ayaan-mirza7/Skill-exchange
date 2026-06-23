@@ -6,6 +6,7 @@ import Footer from "../components/footer";
 import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
 import ResourceThumb from "../components/ResourceThumb";
+import ResourcePublisher from "../components/ResourcePublisher";
 import "./mypurchase.css";
 import "./AppPages.css";
 
@@ -71,6 +72,7 @@ export default function MyPurchase() {
               <div className="resource-body">
                 <h3 className="resource-title">{v.title}</h3>
                 <p className="resource-desc">{v.description}</p>
+                <ResourcePublisher item={v} />
                 <div className="resource-row">
                   <span className="muted-text">{v.cost} credits</span>
                   <Button onClick={() => navigate(`/video/${v._id}`)}>Play</Button>
@@ -88,6 +90,7 @@ export default function MyPurchase() {
                 <ResourceThumb item={d} type="notes" />
                 <div className="resource-body">
                   <h3 className="resource-title">{d.title}</h3>
+                  <ResourcePublisher item={d} />
                   <div className="resource-row">
                     <span className="muted-text">{d.cost} credits</span>
                     <Button onClick={() => downloadNote(d._id || d.id)}>Download</Button>

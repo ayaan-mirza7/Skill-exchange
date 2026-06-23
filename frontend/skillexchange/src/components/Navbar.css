@@ -38,6 +38,8 @@
 }
 
 .nav-link {
+  display: inline-flex;
+  align-items: center;
   text-decoration: none;
   color: var(--text-secondary);
   font-weight: 500;
@@ -53,6 +55,61 @@
 
 .nav-link.active {
   background: color-mix(in srgb, var(--primary) 16%, transparent);
+  color: var(--primary);
+}
+
+.nav-dropdown {
+  position: relative;
+}
+
+.nav-dropdown-trigger {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+}
+
+.nav-dropdown-trigger::after {
+  content: "";
+  width: 0.4rem;
+  height: 0.4rem;
+  margin-left: 0.45rem;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: translateY(-0.12rem) rotate(45deg);
+}
+
+.nav-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 0.45rem);
+  left: 0;
+  min-width: 9rem;
+  display: none;
+  padding: 0.35rem;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow-md);
+}
+
+.nav-dropdown:hover .nav-dropdown-menu,
+.nav-dropdown:focus-within .nav-dropdown-menu {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.nav-dropdown-item {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-weight: 500;
+  border-radius: 6px;
+  padding: 0.55rem 0.65rem;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.nav-dropdown-item:hover,
+.nav-dropdown-item.active {
+  background: color-mix(in srgb, var(--primary) 14%, transparent);
   color: var(--primary);
 }
 

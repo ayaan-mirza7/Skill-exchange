@@ -32,7 +32,7 @@ export default function Signup() {
   return (
     <div className="auth-container">
       <div className="brand-header">
-        <img src={Logo} alt="Site Logo" className="brand-logo" />
+        <img src={Logo} alt="Skill Exchange logo" className="auth-logo" />
         <h1 className="brand-text">Skill Exchange</h1>
       </div>
       <Card className="auth-card">

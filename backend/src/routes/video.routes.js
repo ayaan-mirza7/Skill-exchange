@@ -27,7 +27,9 @@ const upload = multer({ storage });
 
 //  PUBLIC FEED
 router.get("/", async (req, res) => {
-  const videos = await Video.find();
+  const videos = await Video.find()
+    .populate("uploadedBy", "name email")
+    .populate("uploadedby", "name email");
   res.json(videos);
 });
 

@@ -5,6 +5,7 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/footer";
 import Card from "../components/ui/Card";
 import ResourceThumb from "../components/ResourceThumb";
+import ResourcePublisher from "../components/ResourcePublisher";
 import "./AppPages.css";
 
 export default function Home() {
@@ -30,6 +31,7 @@ export default function Home() {
               <div className="resource-body">
                 <h3 className="resource-title">{v.title}</h3>
                 <p className="resource-desc">{v.description}</p>
+                <ResourcePublisher item={v} />
                 <div className="resource-row">
                   <span className="muted-text">{v.cost} credits</span>
                   <Link to={`/video/${v._id}`}>Open</Link>

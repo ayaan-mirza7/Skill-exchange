@@ -1,7 +1,7 @@
 import Profile from "../assets/profile.svg";
 import "./Navbar.css";
 import Logo from "../assets/logo.png";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import Button from "./ui/Button";
 import { useTheme } from "../context/ThemeContext";
 import { useUser } from "../context/UserContext";
@@ -16,8 +16,10 @@ const navItems = [
 
 export default function Navbar() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { theme, toggleTheme } = useTheme();
   const { user } = useUser();
+  const uploadActive = location.pathname.startsWith("/upload");
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -42,6 +44,28 @@ export default function Navbar() {
             </NavLink>
           </li>
         ))}
+        <li className="nav-dropdown">
+          <button
+            type="button"
+            className={uploadActive ? "nav-link nav-dropdown-trigger active" : "nav-link nav-dropdown-trigger"}
+          >
+            Upload
+          </button>
+          <div className="nav-dropdown-menu">
+            <NavLink
+              to="/upload-video"
+              className={({ isActive }) => (isActive ? "nav-dropdown-item active" : "nav-dropdown-item")}
+            >
+              Video
+            </NavLink>
+            <NavLink
+              to="/upload-notes"
+              className={({ isActive }) => (isActive ? "nav-dropdown-item active" : "nav-dropdown-item")}
+            >
+              Notes
+            </NavLink>
+          </div>
+        </li>
       </ul>
 
       <div className="navbar-right">

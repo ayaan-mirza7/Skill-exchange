@@ -6,6 +6,7 @@ import Footer from "../components/footer";
 import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
 import ResourceThumb from "../components/ResourceThumb";
+import ResourcePublisher from "../components/ResourcePublisher";
 import "./Dashboard.css";
 import "./AppPages.css";
 
@@ -29,29 +30,6 @@ export default function Dashboard() {
     load();
   }, []);
 
-  const downloadNote = async (id) => {
-    try {
-      const res = await api.post(`/notes/download/${id}`, {}, { responseType: "blob" });
-      const disposition = res.headers["content-disposition"] || "";
-      const filename = disposition.match(/filename="(.+)"/)?.[1] || "downloaded-file";
-      const blob = new Blob([res.data]);
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
-    } catch (err) {
-      const msg =
-        err?.response?.data?.message ||
-        (typeof err?.message === "string" ? err.message : null) ||
-        "Download failed";
-      alert(msg);
-    }
-  };
-
   return (
     <div className="page-shell">
       <Navbar />
@@ -72,6 +50,7 @@ export default function Dashboard() {
                   <div className="resource-body">
                     <h3 className="resource-title">{v.title}</h3>
                     <p className="resource-desc">{v.description}</p>
+                    <ResourcePublisher item={v} />
                     <div className="resource-row">
                       <span className="muted-text">{v.cost} credits</span>
                       <Button onClick={() => navigate(`/video/${v._id}`)}>Watch</Button>
@@ -94,9 +73,10 @@ export default function Dashboard() {
                   <ResourceThumb item={n} type="notes" />
                   <div className="resource-body">
                     <h3 className="resource-title">{n.title}</h3>
+                    <ResourcePublisher item={n} />
                     <div className="resource-row">
                       <span className="muted-text">{n.cost} credits</span>
-                      <Button onClick={() => downloadNote(n._id)}>Download</Button>
+                      <Button onClick={() => navigate(`/notes/${n._id}`)}>Review</Button>
                     </div>
                   </div>
                 </Card>
@@ -105,12 +85,6 @@ export default function Dashboard() {
           )}
         </section>
 
-        <div className="dashboard-actions">
-          <Button onClick={() => navigate("/upload-video")}>Upload Video</Button>
-          <Button variant="secondary" onClick={() => navigate("/upload-notes")}>
-            Upload Notes
-          </Button>
-        </div>
       </main>
       <Footer />
     </div>

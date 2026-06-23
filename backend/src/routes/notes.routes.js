@@ -67,8 +67,20 @@ router.post("/", auth, upload.single("notes"), async (req, res) => {
 });
 
 router.get("/", async (req, res) => {
-  const notes = await Notes.find();
+  const notes = await Notes.find().populate("uploadedBy", "name email");
   res.json(notes);
+});
+
+router.get("/:id", async (req, res) => {
+  try {
+    const note = await Notes.findById(req.params.id).populate("uploadedBy", "name email");
+    if (!note) return res.status(404).json({ message: "Note not found" });
+
+    const { filepath, ...safe } = note.toObject();
+    res.json(safe);
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
 });
 
 router.post("/download/:id", auth, async (req, res) => {
@@ -84,7 +96,6 @@ router.post("/download/:id", auth, async (req, res) => {
       return res.status(404).json({ message: "File missing on server" });
     }
 
-    const cost = Number(note.cost ?? 3);
     const isOwner = note.uploadedBy?.toString?.() === req.userId;
 
     if (isOwner) {
@@ -99,19 +110,10 @@ router.post("/download/:id", auth, async (req, res) => {
       noteId: note._id,
     });
 
-    if (!already) {
-      if (user.credits < cost) {
-        return res.status(400).json({ message: "Not enough credits" });
-      }
+    const purchased = user.purchasedDocs?.some((id) => String(id) === String(note._id));
 
-      user.credits -= cost;
-      await user.save();
-
-      try {
-        await NoteAccess.create({ userId: req.userId, noteId: note._id });
-      } catch (e) {
-        // Ignore duplicate unlocks from concurrent requests.
-      }
+    if (!already && !purchased) {
+      return res.status(403).json({ message: "Please unlock these notes before downloading" });
     }
 
     await User.findByIdAndUpdate(req.userId, { $addToSet: { purchasedDocs: note._id } });

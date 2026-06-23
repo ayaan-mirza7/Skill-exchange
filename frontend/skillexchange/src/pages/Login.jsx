@@ -34,24 +34,40 @@ export default function Login() {
 
   return (
     <div className="auth-container">
-      <div className="brand-header">
-        <img src={Logo} alt="Site Logo" className="brand-logo" />
-        <h1 className="brand-text">Skill Exchange</h1>
+      <div className="auth-shell">
+        <section className="auth-copy" aria-label="About Skill Exchange">
+          <div className="brand-header">
+            <img src={Logo} alt="Skill Exchange logo" className="auth-logo" />
+            <h1 className="brand-text">Skill Exchange</h1>
+          </div>
+          <p className="auth-description">
+            Learn from people who build, teach, and share. Skill Exchange helps students upload
+            videos and notes, discover useful resources, and trade knowledge through a simple
+            credit based learning community.
+          </p>
+          <div className="auth-highlights" aria-label="Site highlights">
+            <span>Video lessons</span>
+            <span>Shared notes</span>
+            <span>Credit rewards</span>
+          </div>
+        </section>
+
+        <Card className="auth-card login-card">
+          <form className="auth-form" onSubmit={handleSubmit}>
+            <p className="auth-kicker">Log in to continue</p>
+            <h2 className="auth-title">Welcome back</h2>
+            {error && <p className="auth-error">{error}</p>}
+            <Input type="email" name="email" placeholder="Email" onChange={(e) => setForm({ ...form, email: e.target.value })} required />
+            <Input type="password" name="password" placeholder="Password" onChange={(e) => setForm({ ...form, password: e.target.value })} required />
+            <Button type="submit" disabled={loading} className="auth-submit">
+              {loading ? "Logging in..." : "Login"}
+            </Button>
+          </form>
+          <p className="auth-switch">
+            Don&apos;t have an account? <Link to="/signup">Sign Up</Link>
+          </p>
+        </Card>
       </div>
-      <Card className="auth-card">
-        <form className="auth-form" onSubmit={handleSubmit}>
-          <h2 className="auth-title">Welcome back</h2>
-          {error && <p className="auth-error">{error}</p>}
-          <Input type="email" name="email" placeholder="Email" onChange={(e) => setForm({ ...form, email: e.target.value })} required />
-          <Input type="password" name="password" placeholder="Password" onChange={(e) => setForm({ ...form, password: e.target.value })} required />
-          <Button type="submit" disabled={loading}>
-            {loading ? "Logging in..." : "Login"}
-          </Button>
-        </form>
-        <p className="auth-switch">
-          Don&apos;t have an account? <Link to="/signup">Sign Up</Link>
-        </p>
-      </Card>
     </div>
   );
 }

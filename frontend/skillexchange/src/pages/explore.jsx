@@ -6,9 +6,8 @@ import Footer from "../components/footer";
 import Input from "../components/ui/Input";
 import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
-import TransactionModal from "../components/TransactionModal";
-import RewardModal from "../components/RewardModal";
 import ResourceThumb from "../components/ResourceThumb";
+import ResourcePublisher from "../components/ResourcePublisher";
 import { useUser } from "../context/UserContext";
 import "./explore.css";
 import "./AppPages.css";
@@ -19,13 +18,8 @@ export default function Explore() {
   const [query, setQuery] = useState("");
   const [tab, setTab] = useState("all");
   const [loading, setLoading] = useState(true);
-  const [unlockModal, setUnlockModal] = useState({ open: false, note: null });
-  const [unlocking, setUnlocking] = useState(false);
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
   const navigate = useNavigate();
-  const { user, refreshUser, updateCredits } = useUser();
-  const [rewardPopup, setRewardPopup] = useState({ open: false, spent: 0, reward: 0 });
+  const { user } = useUser();
 
   useEffect(() => {
     const load = async () => {
@@ -41,71 +35,6 @@ export default function Explore() {
     };
     load();
   }, []);
-
-  const downloadNote = async (id) => {
-    try {
-      const res = await api.post(`/notes/download/${id}`, {}, { responseType: "blob" });
-      const disposition = res.headers["content-disposition"] || "";
-      const filename = disposition.match(/filename="(.+)"/)?.[1] || "downloaded-file";
-      const blob = new Blob([res.data]);
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
-    } catch (err) {
-      const msg =
-        err?.response?.data?.message ||
-        (typeof err?.message === "string" ? err.message : null) ||
-        "Download failed";
-      alert(msg);
-    }
-  };
-
-  const startNoteUnlock = (note) => {
-    setError("");
-    setMessage("");
-    setUnlockModal({ open: true, note });
-  };
-
-  const confirmUnlockNote = async () => {
-    if (!unlockModal.note?._id) return;
-    setUnlocking(true);
-    setError("");
-    setMessage("");
-    try {
-      const res = await api.post("/user/unlock-content", {
-        contentType: "doc",
-        contentId: unlockModal.note._id,
-      });
-      if (typeof res?.data?.credits === "number") {
-        updateCredits(res.data.credits);
-      }
-      await refreshUser();
-      if (res.data?.rewardMessage) setMessage(res.data.rewardMessage);
-      if (!res?.data?.alreadyUnlocked) {
-        setRewardPopup({
-          open: true,
-          spent: Number(res?.data?.spentCredits ?? unlockModal.note?.cost ?? 3),
-          reward: Number(res?.data?.reward ?? 0),
-        });
-      }
-      setUnlockModal({ open: false, note: null });
-      await downloadNote(unlockModal.note._id);
-    } catch (err) {
-      const apiMessage = err?.response?.data?.message || "Unlock failed";
-      if (apiMessage === "Insufficient Credits") {
-        setError("Insufficient Credits");
-      } else {
-        setError(apiMessage);
-      }
-    } finally {
-      setUnlocking(false);
-    }
-  };
 
   const skills = useMemo(() => {
     const freq = {};
@@ -162,13 +91,6 @@ export default function Explore() {
         </section>
 
         {loading && <p className="muted-text">Loading resources...</p>}
-        {message && <p className="success-text">{message}</p>}
-        {error && (
-          <p className="error-text">
-            {error} - <Link to="/purchase-credits">Purchase credits</Link>
-          </p>
-        )}
-
         {(tab === "all" || tab === "skills") && (
           <section>
             <h2 className="section-heading">Skills</h2>
@@ -194,6 +116,7 @@ export default function Explore() {
                   <div className="resource-body">
                     <h3 className="resource-title">{v.title}</h3>
                     <p className="resource-desc">{v.description}</p>
+                    <ResourcePublisher item={v} />
                     <div className="resource-row">
                       <span className="muted-text">{v.cost} credits</span>
                       <Button onClick={() => navigate(`/video/${v._id}`)}>Unlock</Button>
@@ -214,9 +137,10 @@ export default function Explore() {
                   <ResourceThumb item={n} type="notes" />
                   <div className="resource-body">
                     <h3 className="resource-title">{n.title}</h3>
+                    <ResourcePublisher item={n} />
                     <div className="resource-row">
                       <span className="muted-text">{n.cost} credits</span>
-                      <Button onClick={() => startNoteUnlock(n)}>Unlock</Button>
+                      <Button onClick={() => navigate(`/notes/${n._id}`)}>Review</Button>
                     </div>
                   </div>
                 </Card>
@@ -225,21 +149,6 @@ export default function Explore() {
           </section>
         )}
       </main>
-      <TransactionModal
-        open={unlockModal.open}
-        title="Unlock Notes"
-        requiredCredits={Number(unlockModal.note?.cost ?? 3)}
-        currentCredits={Number(user?.credits ?? 0)}
-        loading={unlocking}
-        onCancel={() => setUnlockModal({ open: false, note: null })}
-        onConfirm={confirmUnlockNote}
-      />
-      <RewardModal
-        open={rewardPopup.open}
-        spent={rewardPopup.spent}
-        reward={rewardPopup.reward}
-        onClose={() => setRewardPopup({ open: false, spent: 0, reward: 0 })}
-      />
       <Footer />
     </div>
   );

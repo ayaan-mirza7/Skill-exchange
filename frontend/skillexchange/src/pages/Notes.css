@@ -1,0 +1,61 @@
+.notes-page {
+  display: grid;
+}
+
+.notes-card {
+  overflow: hidden;
+}
+
+.notes-preview {
+  min-height: 220px;
+  display: grid;
+  place-items: center;
+  padding: 1.25rem;
+  color: var(--text-primary);
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--primary) 18%, transparent), transparent),
+    var(--bg-soft);
+  border-bottom: 1px solid var(--border);
+  text-align: center;
+}
+
+.notes-preview p {
+  margin: 0.75rem 0 0;
+  color: var(--text-secondary);
+}
+
+.notes-file-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 7rem;
+  height: 8.5rem;
+  border: 2px solid color-mix(in srgb, var(--primary) 34%, var(--border));
+  border-radius: 8px;
+  background: var(--bg-elevated);
+  box-shadow: var(--shadow-md);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.notes-details {
+  padding: 1rem;
+  display: grid;
+  gap: 0.7rem;
+}
+
+.notes-cost {
+  width: fit-content;
+  margin: 0;
+  color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
+  border-radius: 999px;
+  padding: 0.4rem 0.7rem;
+  font-weight: 800;
+}
+
+.notes-actions {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}

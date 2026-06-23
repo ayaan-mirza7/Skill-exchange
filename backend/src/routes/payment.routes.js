@@ -65,7 +65,9 @@ router.post("/create-order", auth, async (req, res) => {
       credits,
     });
   } catch (err) {
-    return res.status(400).json({ message: err.message || "Could not create Razorpay order" });
+    return res
+      .status(400)
+      .json({ message: err.message || "Could not create Razorpay order" });
   }
 });
 
@@ -84,7 +86,9 @@ router.post("/verify", auth, async (req, res) => {
     } = req.body;
 
     if (!orderId || !paymentId || !signature) {
-      return res.status(400).json({ message: "Missing Razorpay payment details" });
+      return res
+        .status(400)
+        .json({ message: "Missing Razorpay payment details" });
     }
 
     const expectedSignature = crypto
@@ -98,12 +102,16 @@ router.post("/verify", auth, async (req, res) => {
 
     const order = await razorpay.orders.fetch(orderId);
     if (order.notes?.userId !== req.userId) {
-      return res.status(400).json({ message: "Payment order does not belong to this user" });
+      return res
+        .status(400)
+        .json({ message: "Payment order does not belong to this user" });
     }
 
     const credits = Number(order.notes?.credits);
     if (!Number.isInteger(credits) || credits <= 0) {
-      return res.status(400).json({ message: "Invalid credits in payment order" });
+      return res
+        .status(400)
+        .json({ message: "Invalid credits in payment order" });
     }
 
     const amountInr = Number(order.amount) / 100;
@@ -113,6 +121,9 @@ router.post("/verify", auth, async (req, res) => {
     }).select("credits");
 
     if (existingPurchase) {
+      console.log(
+        `[Payment] Payment already verified for user ${req.userId}, payment ${paymentId}`,
+      );
       return res.json({
         message: "Payment already verified.",
         credits: existingPurchase.credits,
@@ -121,6 +132,14 @@ router.post("/verify", auth, async (req, res) => {
         paymentId,
       });
     }
+
+    console.log(
+      `[Payment] Processing new payment for user ${req.userId}, adding ${credits} credits`,
+    );
+
+    // Get user's current credits before update
+    const userBefore = await User.findById(req.userId).select("credits");
+    const creditsBefore = userBefore?.credits ?? 0;
 
     const user = await User.findByIdAndUpdate(
       req.userId,
@@ -139,6 +158,24 @@ router.post("/verify", auth, async (req, res) => {
       { new: true },
     ).select("-password");
 
+    if (!user) {
+      console.error(
+        `[Payment] User not found after update for userId ${req.userId}`,
+      );
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const expectedCredits = creditsBefore + credits;
+    if (user.credits !== expectedCredits) {
+      console.warn(
+        `[Payment] Credits mismatch! Expected: ${expectedCredits}, Got: ${user.credits}`,
+      );
+    }
+
+    console.log(
+      `[Payment] Payment successful for user ${req.userId}, credits: ${creditsBefore} -> ${user.credits}`,
+    );
+
     return res.json({
       message: "Payment successful. Credits added.",
       credits: user.credits,
@@ -147,7 +184,10 @@ router.post("/verify", auth, async (req, res) => {
       paymentId,
     });
   } catch (err) {
-    return res.status(500).json({ message: err.message || "Payment verification failed" });
+    console.error(`[Payment] Error in payment verification:`, err);
+    return res
+      .status(500)
+      .json({ message: err.message || "Payment verification failed" });
   }
 });
 

@@ -14,10 +14,3 @@
   color: var(--text-secondary);
   font-weight: 700;
 }
-
-.dashboard-actions {
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-}

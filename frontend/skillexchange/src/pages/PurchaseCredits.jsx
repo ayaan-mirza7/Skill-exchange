@@ -21,7 +21,8 @@ const loadRazorpayCheckout = () =>
     const script = document.createElement("script");
     script.src = RAZORPAY_CHECKOUT_URL;
     script.onload = () => resolve(true);
-    script.onerror = () => reject(new Error("Unable to load Razorpay checkout"));
+    script.onerror = () =>
+      reject(new Error("Unable to load Razorpay checkout"));
     document.body.appendChild(script);
   });
 
@@ -34,7 +35,9 @@ export default function PurchaseCredits() {
   const [error, setError] = useState("");
 
   const handlePurchase = async () => {
-    const finalCredits = customCredits ? Number(customCredits) : Number(selected);
+    const finalCredits = customCredits
+      ? Number(customCredits)
+      : Number(selected);
     if (!Number.isInteger(finalCredits) || finalCredits <= 0) {
       setError("Please enter a valid credits amount.");
       return;
@@ -45,7 +48,9 @@ export default function PurchaseCredits() {
     setError("");
     try {
       await loadRazorpayCheckout();
-      const orderRes = await api.post("/payments/create-order", { credits: finalCredits });
+      const orderRes = await api.post("/payments/create-order", {
+        credits: finalCredits,
+      });
       const order = orderRes.data;
 
       const checkout = new window.Razorpay({
@@ -65,17 +70,48 @@ export default function PurchaseCredits() {
         },
         handler: async (paymentResponse) => {
           try {
-            const verifyRes = await api.post("/payments/verify", paymentResponse);
+            console.log(
+              "[Payment] Verifying payment response:",
+              paymentResponse,
+            );
+            const verifyRes = await api.post(
+              "/payments/verify",
+              paymentResponse,
+            );
+            console.log("[Payment] Verify response:", verifyRes.data);
+
             if (typeof verifyRes?.data?.credits === "number") {
+              console.log(
+                "[Payment] Updating credits locally:",
+                verifyRes.data.credits,
+              );
               updateCredits(verifyRes.data.credits);
+            } else {
+              console.warn(
+                "[Payment] Credits not in response or invalid type:",
+                verifyRes.data.credits,
+              );
             }
-            await refreshUser();
+
+            console.log("[Payment] Refreshing user from server...");
+            const refreshedUser = await refreshUser();
+            console.log(
+              "[Payment] User refreshed, new credits:",
+              refreshedUser?.credits,
+            );
+
             setMessage(
               `${verifyRes.data.message} Added ${finalCredits} credits for INR ${verifyRes.data.amountInr}.`,
             );
             setCustomCredits("");
           } catch (err) {
-            setError(err?.response?.data?.message || "Payment verification failed");
+            console.error(
+              "[Payment] Error during verification:",
+              err.response?.data || err.message,
+            );
+            setError(
+              err?.response?.data?.message || "Payment verification failed",
+            );
           } finally {
             setLoading(false);
           }
@@ -102,7 +138,9 @@ export default function PurchaseCredits() {
         <Card className="purchase-card">
           <h1 className="page-title">Purchase Credits</h1>
           <p className="muted-text">1 Credit = INR 100</p>
-          <p className="muted-text">Current Balance: {user?.credits ?? 0} credits</p>
+          <p className="muted-text">
+            Current Balance: {user?.credits ?? 0} credits
+          </p>
           <div className="payment-tag">Razorpay Demo Checkout (test mode)</div>
 
           <div className="credit-options">

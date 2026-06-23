@@ -6,6 +6,7 @@ import Footer from "../components/footer";
 import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
 import ResourceThumb from "../components/ResourceThumb";
+import ResourcePublisher from "../components/ResourcePublisher";
 import { useUser } from "../context/UserContext";
 import "./myskill.css";
 import "./AppPages.css";
@@ -78,6 +79,7 @@ export default function MySkill() {
                   <div className="resource-body">
                     <h3 className="resource-title">{v.title}</h3>
                     <p className="resource-desc">{v.description}</p>
+                    <ResourcePublisher item={v} />
                     <div className="resource-row">
                       <span className="muted-text">{v.cost} credits</span>
                       <Button onClick={() => navigate(`/video/${v._id}`)}>View</Button>
@@ -100,6 +102,7 @@ export default function MySkill() {
                   <ResourceThumb item={n} type="notes" />
                   <div className="resource-body">
                     <h3 className="resource-title">{n.title}</h3>
+                    <ResourcePublisher item={n} />
                     <div className="resource-row">
                       <span className="muted-text">{n.cost} credits</span>
                       <Button onClick={() => downloadNote(n._id || n.id)}>Download</Button>
@@ -123,6 +126,7 @@ export default function MySkill() {
                   <ResourceThumb item={v} />
                   <div className="resource-body">
                     <h3 className="resource-title">{v.title || "Unlocked Video"}</h3>
+                    <ResourcePublisher item={v} />
                     <div className="resource-row">
                       <span className="muted-text">{v.cost ?? "-"} credits</span>
                       <Button onClick={() => navigate(`/video/${v._id || v}`)}>Unlocked</Button>
@@ -135,6 +139,7 @@ export default function MySkill() {
                   <ResourceThumb item={n} type="notes" />
                   <div className="resource-body">
                     <h3 className="resource-title">{n.title || "Unlocked Notes"}</h3>
+                    <ResourcePublisher item={n} />
                     <div className="resource-row">
                       <span className="muted-text">{n.cost ?? "-"} credits</span>
                       <Button onClick={() => navigate("/explore")}>Unlocked</Button>

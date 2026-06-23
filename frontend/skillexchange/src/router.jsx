@@ -4,6 +4,7 @@ import Signup from "./pages/Signup";
 import Protectedroute from "./components/protectedroute";
 import Dashboard from "./pages/Dashboard";
 import Video from "./pages/Video";
+import Notes from "./pages/Notes";
 import UploadVideo from "./pages/UploadVideo";
 import UploadNotes from "./pages/UploadNotes";
 import Profile from "./pages/Profile";
@@ -20,6 +21,7 @@ const router = createBrowserRouter([
   { path: "/signup", element: <Signup /> },
   { path: "/dashboard", element: withAuth(<Dashboard />) },
   { path: "/video/:id", element: withAuth(<Video />) },
+  { path: "/notes/:id", element: withAuth(<Notes />) },
   { path: "/upload-video", element: withAuth(<UploadVideo />) },
   { path: "/upload-notes", element: withAuth(<UploadNotes />) },
   { path: "/upload", element: withAuth(<UploadVideo />) },

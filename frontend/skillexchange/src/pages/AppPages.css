@@ -48,6 +48,13 @@
   line-height: 1.4;
 }
 
+.resource-publisher {
+  margin: -0.25rem 0 0;
+  color: var(--text-secondary);
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
 .resource-row {
   display: flex;
   justify-content: space-between;
