@@ -9,6 +9,21 @@ import "./AppPages.css";
 import "./purchaseCredits.css";
 
 const CREDIT_OPTIONS = [1, 5, 10];
+const RAZORPAY_CHECKOUT_URL = "https://checkout.razorpay.com/v1/checkout.js";
+
+const loadRazorpayCheckout = () =>
+  new Promise((resolve, reject) => {
+    if (window.Razorpay) {
+      resolve(true);
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = RAZORPAY_CHECKOUT_URL;
+    script.onload = () => resolve(true);
+    script.onerror = () => reject(new Error("Unable to load Razorpay checkout"));
+    document.body.appendChild(script);
+  });
 
 export default function PurchaseCredits() {
   const { user, refreshUser, updateCredits } = useUser();
@@ -29,19 +44,53 @@ export default function PurchaseCredits() {
     setMessage("");
     setError("");
     try {
-      const paymentId = `rzp_test_${Date.now()}`;
-      const res = await api.post("/user/purchase-credits", { credits: finalCredits, paymentId });
-      if (typeof res?.data?.credits === "number") {
-        updateCredits(res.data.credits);
-      }
-      await refreshUser();
-      setMessage(
-        `${res.data.message} Added ${finalCredits} credits for INR ${res.data.amountInr}.`,
-      );
-      setCustomCredits("");
+      await loadRazorpayCheckout();
+      const orderRes = await api.post("/payments/create-order", { credits: finalCredits });
+      const order = orderRes.data;
+
+      const checkout = new window.Razorpay({
+        key: order.keyId,
+        amount: order.amount,
+        currency: order.currency,
+        name: "Skill Exchange",
+        description: `${finalCredits} credits`,
+        order_id: order.orderId,
+        prefill: {
+          name: user?.name || "",
+          email: user?.email || "",
+          contact: user?.phone || "",
+        },
+        theme: {
+          color: "#2563eb",
+        },
+        handler: async (paymentResponse) => {
+          try {
+            const verifyRes = await api.post("/payments/verify", paymentResponse);
+            if (typeof verifyRes?.data?.credits === "number") {
+              updateCredits(verifyRes.data.credits);
+            }
+            await refreshUser();
+            setMessage(
+              `${verifyRes.data.message} Added ${finalCredits} credits for INR ${verifyRes.data.amountInr}.`,
+            );
+            setCustomCredits("");
+          } catch (err) {
+            setError(err?.response?.data?.message || "Payment verification failed");
+          } finally {
+            setLoading(false);
+          }
+        },
+        modal: {
+          ondismiss: () => {
+            setLoading(false);
+            setError("Payment was cancelled.");
+          },
+        },
+      });
+
+      checkout.open();
     } catch (err) {
-      setError(err?.response?.data?.message || "Payment failed");
-    } finally {
+      setError(err?.response?.data?.message || err.message || "Payment failed");
       setLoading(false);
     }
   };

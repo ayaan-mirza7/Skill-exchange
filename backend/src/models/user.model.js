@@ -6,6 +6,7 @@ const creditPurchaseSchema = new mongoose.Schema(
     credits: { type: Number, required: true, min: 1 },
     amountInr: { type: Number, required: true, min: 100 },
     paymentId: { type: String, default: "" },
+    razorpayOrderId: { type: String, default: "" },
     status: { type: String, enum: ["success", "failed"], default: "success" },
   },
   { _id: false, timestamps: true },

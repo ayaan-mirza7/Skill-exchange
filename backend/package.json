@@ -23,6 +23,7 @@
     "mime-types": "^3.0.2",
     "mongoose": "^9.1.4",
     "multer": "^2.0.2",
+    "razorpay": "^2.9.6",
     "type": "^2.7.3"
   },
   "devDependencies": {

@@ -9,6 +9,7 @@ import User from "../models/user.model.js";
 import NoteAccess from "../models/noteAccess.model.js";
 import {
   buildUploadPath,
+  backendRoot,
   ensureUploadDir,
   notesUploadDir,
 } from "../utils/uploadPaths.js";
@@ -77,7 +78,7 @@ router.post("/download/:id", auth, async (req, res) => {
     if (!note) return res.status(404).json({ message: "Note not found" });
 
     const notePath = (note.filepath || "").replaceAll("\\", "/");
-    const absolutePath = path.resolve(notePath);
+    const absolutePath = path.resolve(backendRoot, notePath);
 
     if (!fs.existsSync(absolutePath)) {
       return res.status(404).json({ message: "File missing on server" });

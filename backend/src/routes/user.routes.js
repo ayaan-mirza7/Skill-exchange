@@ -37,40 +37,9 @@ router.get("/purchases", auth, async (req, res) => {
 });
 
 router.post("/purchase-credits", auth, async (req, res) => {
-  try {
-    const requestedCredits = Number(req.body.credits);
-    const paymentId = String(req.body.paymentId || `mock_${Date.now()}`);
-    if (!Number.isInteger(requestedCredits) || requestedCredits <= 0) {
-      return res.status(400).json({ message: "Invalid credits amount" });
-    }
-
-    const amountInr = requestedCredits * 100;
-    const user = await User.findByIdAndUpdate(
-      req.userId,
-      {
-        $inc: { credits: requestedCredits },
-        $push: {
-          creditPurchases: {
-            credits: requestedCredits,
-            amountInr,
-            paymentId,
-            status: "success",
-          },
-        },
-      },
-      { new: true },
-    ).select("-password");
-
-    return res.json({
-      message: "Payment successful. Credits added.",
-      credits: user.credits,
-      purchasedCredits: requestedCredits,
-      amountInr,
-      paymentId,
-    });
-  } catch (err) {
-    return res.status(500).json({ message: "Payment failed. Please retry." });
-  }
+  return res.status(410).json({
+    message: "Use /api/payments/create-order and /api/payments/verify for Razorpay payments.",
+  });
 });
 
 router.post("/unlock-content", auth, async (req, res) => {

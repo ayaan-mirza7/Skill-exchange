@@ -1,6 +1,6 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import api from "../api";
+import api, { API_ORIGIN } from "../api";
 import Navbar from "../components/Navbar";
 import Footer from "../components/footer";
 import Button from "../components/ui/Button";
@@ -52,7 +52,7 @@ export default function Video() {
       }
       const res = await api.post(`/videos/watch/${id}`);
       await refreshUser();
-      setPath("http://localhost:5000/" + res.data.path);
+      setPath(`${API_ORIGIN}/${res.data.path}`);
       setTitle(res.data.title || "Video Unlocked");
       setDescription(res.data.description || "Enjoy the lesson.");
       if (unlockRes.data?.rewardMessage) {
