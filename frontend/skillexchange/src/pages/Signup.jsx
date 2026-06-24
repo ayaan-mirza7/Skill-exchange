@@ -39,10 +39,27 @@ export default function Signup() {
         <h2 className="auth-title">Create account</h2>
         <form className="auth-form" onSubmit={handleSubmit}>
           {message && <p className="auth-error">{message}</p>}
-          <Input name="name" placeholder="Full name" onChange={(e) => setForm({ ...form, name: e.target.value })} />
-          <Input name="email" placeholder="Email" onChange={(e) => setForm({ ...form, email: e.target.value })} />
-          <Input type="password" name="password" placeholder="Password" onChange={(e) => setForm({ ...form, password: e.target.value })} />
-          <Input type="password" placeholder="Confirm password" onChange={(e) => setConfirm(e.target.value)} />
+          <Input
+            name="name"
+            placeholder="Full name"
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
+          />
+          <Input
+            name="email"
+            placeholder="Email"
+            onChange={(e) => setForm({ ...form, email: e.target.value })}
+          />
+          <Input
+            type="password"
+            name="password"
+            placeholder="Password"
+            onChange={(e) => setForm({ ...form, password: e.target.value })}
+          />
+          <Input
+            type="password"
+            placeholder="Confirm password"
+            onChange={(e) => setConfirm(e.target.value)}
+          />
           <Button type="submit">Create Account</Button>
         </form>
         <p className="auth-switch">

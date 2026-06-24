@@ -41,9 +41,9 @@ export default function Login() {
             <h1 className="brand-text">Skill Exchange</h1>
           </div>
           <p className="auth-description">
-            Learn from people who build, teach, and share. Skill Exchange helps students upload
-            videos and notes, discover useful resources, and trade knowledge through a simple
-            credit based learning community.
+            Learn from people who build, teach, and share. Skill Exchange helps
+            students upload videos and notes, discover useful resources, and
+            trade knowledge through a simple credit based learning community.
           </p>
           <div className="auth-highlights" aria-label="Site highlights">
             <span>Video lessons</span>
@@ -57,8 +57,20 @@ export default function Login() {
             <p className="auth-kicker">Log in to continue</p>
             <h2 className="auth-title">Welcome back</h2>
             {error && <p className="auth-error">{error}</p>}
-            <Input type="email" name="email" placeholder="Email" onChange={(e) => setForm({ ...form, email: e.target.value })} required />
-            <Input type="password" name="password" placeholder="Password" onChange={(e) => setForm({ ...form, password: e.target.value })} required />
+            <Input
+              type="email"
+              name="email"
+              placeholder="Email"
+              onChange={(e) => setForm({ ...form, email: e.target.value })}
+              required
+            />
+            <Input
+              type="password"
+              name="password"
+              placeholder="Password"
+              onChange={(e) => setForm({ ...form, password: e.target.value })}
+              required
+            />
             <Button type="submit" disabled={loading} className="auth-submit">
               {loading ? "Logging in..." : "Login"}
             </Button>

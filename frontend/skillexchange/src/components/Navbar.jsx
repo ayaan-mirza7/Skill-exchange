@@ -38,7 +38,9 @@ export default function Navbar() {
           <li key={item.to}>
             <NavLink
               to={item.to}
-              className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}
+              className={({ isActive }) =>
+                isActive ? "nav-link active" : "nav-link"
+              }
             >
               {item.label}
             </NavLink>
@@ -47,20 +49,28 @@ export default function Navbar() {
         <li className="nav-dropdown">
           <button
             type="button"
-            className={uploadActive ? "nav-link nav-dropdown-trigger active" : "nav-link nav-dropdown-trigger"}
+            className={
+              uploadActive
+                ? "nav-link nav-dropdown-trigger active"
+                : "nav-link nav-dropdown-trigger"
+            }
           >
             Upload
           </button>
           <div className="nav-dropdown-menu">
             <NavLink
               to="/upload-video"
-              className={({ isActive }) => (isActive ? "nav-dropdown-item active" : "nav-dropdown-item")}
+              className={({ isActive }) =>
+                isActive ? "nav-dropdown-item active" : "nav-dropdown-item"
+              }
             >
               Video
             </NavLink>
             <NavLink
               to="/upload-notes"
-              className={({ isActive }) => (isActive ? "nav-dropdown-item active" : "nav-dropdown-item")}
+              className={({ isActive }) =>
+                isActive ? "nav-dropdown-item active" : "nav-dropdown-item"
+              }
             >
               Notes
             </NavLink>
